@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { Auth } from './auth';
 
 export type { Database };
 
@@ -24,6 +25,10 @@ export const getSupabaseClient = () => {
   return supabaseClient;
 };
 
+export function createSupabaseAuth(supabaseUrl: string, supabaseKey: string) {
+  return new Auth(supabaseUrl, supabaseKey);
+}
+
 // Re-export types from supabase-js for convenience
 export type {
   User,
@@ -31,4 +36,6 @@ export type {
   AuthError,
   AuthResponse,
   AuthTokenResponse,
-} from '@supabase/supabase-js'; 
+} from '@supabase/supabase-js';
+
+export * from './auth'; 

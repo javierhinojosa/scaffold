@@ -1,0 +1,282 @@
+---
+title: Authentication
+description: How authentication works across our applications using Supabase Auth, Svelte, and Astro
+---
+
+## Overview
+
+Our authentication system is built on top of [Supabase Auth](https://supabase.com/docs/guides/auth), integrated with Svelte for state management and Astro for routing. The system is implemented in our shared `@sfh/backend` package, providing a consistent, secure, and type-safe authentication experience across all applications.
+
+## Architecture
+
+The authentication system consists of several key components working together:
+
+### 1. Backend Authentication (`@sfh/backend`)
+
+The core authentication functionality is centralized in our backend package:
+
+```typescript
+// Create an auth instance
+import { createSupabaseAuth } from '@sfh/backend';
+
+const auth = createSupabaseAuth(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+```
+
+The `Auth` class provides:
+- User management and sessions
+- Secure password hashing
+- JWT tokens for session management
+- Row Level Security (RLS) integration
+- Type-safe authentication methods
+
+### 2. Framework Integration
+
+Our authentication system is designed to work with different frontend frameworks. Currently, we provide built-in support for Svelte stores:
+
+```typescript
+import { writable } from 'svelte/store';
+import { createSvelteAuthStore } from '@sfh/backend';
+
+export const authStore = createSvelteAuthStore({
+  auth,
+  createStore: writable,
+});
+```
+
+### 3. Frontend Implementation
+
+Applications can implement authentication using three main components:
+
+#### Auth Instance
+
+```typescript
+// lib/auth.ts
+import { createSupabaseAuth } from '@sfh/backend';
+
+export const auth = createSupabaseAuth(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Re-export auth methods for convenience
+export const {
+  signInWithEmail,
+  signUp,
+  signOut,
+  getCurrentUser,
+  onAuthStateChange,
+} = auth;
+```
+
+#### Auth Store
+
+```typescript
+// lib/stores/auth.ts
+import { writable } from 'svelte/store';
+import { auth } from '../auth';
+import { createSvelteAuthStore } from '@sfh/backend';
+
+export const authStore = createSvelteAuthStore({
+  auth,
+  createStore: writable,
+});
+```
+
+#### Protected Layout
+
+```svelte
+<!-- layouts/ProtectedLayout.svelte -->
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { authStore } from '../lib/stores/auth';
+
+  let mounted = false;
+
+  onMount(() => {
+    mounted = true;
+  });
+
+  $: if (mounted && !$authStore.loading && !$authStore.user) {
+    window.location.href = '/login';
+  }
+</script>
+
+{#if $authStore.loading}
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+{:else if $authStore.user}
+  <slot />
+{/if}
+```
+
+## Implementation Details
+
+### Authentication Flow
+
+1. **Login Process**:
+   ```typescript
+   import { auth } from '../lib/auth';
+   
+   async function handleLogin(email: string, password: string) {
+     const { user } = await auth.signInWithEmail(email, password);
+     // Handle successful login
+   }
+   ```
+
+2. **Session Management**:
+   - Sessions are managed by Supabase
+   - Auth store syncs with Supabase's auth state
+   - Real-time session updates through `onAuthStateChange`
+
+3. **Protected Routes**:
+   ```astro
+   ---
+   // dashboard.astro or any protected page
+   import ProtectedLayout from '../layouts/ProtectedLayout.svelte';
+   ---
+   <ProtectedLayout client:load>
+     <YourProtectedContent />
+   </ProtectedLayout>
+   ```
+
+## Security Considerations
+
+### Environment Variables
+
+```bash
+# Required for authentication
+PUBLIC_SUPABASE_URL="your-project-url"
+PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+
+# For secure server-side operations
+SUPABASE_SERVICE_KEY="your-service-key" # Never expose this
+```
+
+### Row Level Security (RLS)
+
+All data access is controlled through RLS policies that integrate with the authentication system:
+
+```sql
+-- Example: Users can only access their own data
+create policy "Users can only access their own data"
+  on public.users
+  for select
+  using (auth.uid() = id);
+```
+
+## Usage Examples
+
+### 1. Setting Up Authentication in a New App
+
+```typescript
+// 1. Create auth instance
+import { createSupabaseAuth } from '@sfh/backend';
+export const auth = createSupabaseAuth(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// 2. Create auth store (if using Svelte)
+import { writable } from 'svelte/store';
+import { createSvelteAuthStore } from '@sfh/backend';
+export const authStore = createSvelteAuthStore({
+  auth,
+  createStore: writable,
+});
+```
+
+### 2. Using Auth in Components
+
+```typescript
+<script lang="ts">
+  import { authStore } from '../lib/stores/auth';
+  import { auth } from '../lib/auth';
+
+  async function handleSignOut() {
+    await auth.signOut();
+    window.location.href = '/login';
+  }
+
+  $: user = $authStore.user;
+  $: isLoading = $authStore.loading;
+</script>
+```
+
+## Best Practices
+
+### Authentication Setup
+- Always use the shared `@sfh/backend` package for authentication
+- Configure environment variables properly
+- Initialize auth early in your application
+
+### Route Protection
+- Always wrap protected content in `ProtectedLayout`
+- Use RLS policies as the primary security mechanism
+- Never rely solely on client-side auth checks
+
+### Error Handling
+- Always handle authentication errors gracefully
+- Provide clear feedback to users
+- Log authentication failures appropriately
+
+### State Management
+- Use the provided auth store for state management
+- Avoid storing sensitive auth data in local storage
+- Clear auth state properly on logout
+
+### Performance
+- Use `client:load` directive for auth components
+- Implement loading states for better UX
+- Cache auth state appropriately
+
+## Testing
+
+### Unit Tests
+
+```typescript
+import { auth } from '../lib/auth';
+
+test('auth methods work correctly', async () => {
+  const { user } = await auth.signInWithEmail('test@example.com', 'password');
+  expect(user).toBeDefined();
+});
+```
+
+### Integration Tests
+
+```typescript
+test('protected routes redirect unauthorized users', async () => {
+  // Test route protection behavior
+});
+```
+
+### E2E Tests
+
+```typescript
+test('user can log in and access protected content', async () => {
+  // Test complete auth flow
+});
+```
+
+## Troubleshooting
+
+Common issues and their solutions:
+
+1. **Session Not Persisting**
+   - Check if cookies are enabled
+   - Verify SSL configuration
+   - Ensure correct environment variables
+
+2. **Protected Route Flashing**
+   - Use `client:load` directive
+   - Implement proper loading states
+   - Check auth store initialization
+
+3. **RLS Policy Issues**
+   - Verify policy syntax
+   - Check user authentication state
+   - Test policies in Supabase Studio 
