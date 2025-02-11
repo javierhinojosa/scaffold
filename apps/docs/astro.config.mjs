@@ -33,6 +33,7 @@ export default defineConfig({
                     items: [
                       { label: 'Astro', link: '/dev/stack/astro/' },
                       { label: 'Svelte', link: '/dev/stack/svelte/' },
+                      { label: 'Supabase', link: '/dev/stack/supabase/' },
                       { label: 'Tailwind + DaisyUI', link: '/dev/stack/styling/' },
                       { label: 'Testing', link: '/dev/stack/testing/' },
                       { label: 'Deployment', link: '/dev/stack/deployment/' },

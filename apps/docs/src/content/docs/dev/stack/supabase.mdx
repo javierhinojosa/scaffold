@@ -1,0 +1,273 @@
+---
+title: Supabase
+description: How we use Supabase as our backend database and authentication provider
+---
+
+## Why Supabase?
+
+[Supabase](https://supabase.com) serves as our primary backend database and authentication provider. We chose Supabase for several compelling reasons:
+
+- **PostgreSQL-Based**: Built on top of PostgreSQL, providing a robust and reliable database foundation
+- **Real-Time Capabilities**: Built-in real-time subscriptions for live data updates
+- **Authentication & Authorization**: Comprehensive auth system with Row Level Security (RLS)
+- **Type Safety**: Generated TypeScript types for database schema
+- **Developer Experience**: Excellent developer tooling and dashboard
+- **Edge Functions**: Serverless functions for custom backend logic
+
+## Setup and Configuration
+
+### Package Structure
+
+We maintain Supabase-related code in our `@sfh/backend` package that centralizes all backend functionality:
+
+```typescript
+// packages/backend/src/supabase.ts
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
+
+export function createSupabaseClient(supabaseUrl: string, supabaseKey: string) {
+  return createClient<Database>(supabaseUrl, supabaseKey);
+}
+```
+
+### Usage in Applications
+
+To use Supabase in any of our applications:
+
+1. Import the client creator:
+```typescript
+import { createSupabaseClient } from '@sfh/backend';
+
+export const supabase = createSupabaseClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+```
+
+2. Use the typed client for database operations:
+```typescript
+const { data, error } = await supabase
+  .from('users')
+  .select(`
+    id,
+    email,
+    profiles (
+      avatar_url,
+      bio
+    )
+  `);
+```
+
+## Environment Variables
+
+Each application using Supabase requires these environment variables:
+
+```bash
+PUBLIC_SUPABASE_URL="your-project-url"
+PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+```
+
+For secure operations (like admin functions), we also use:
+```bash
+SUPABASE_SERVICE_KEY="your-service-key"
+```
+
+## Type Safety
+
+We leverage Supabase's type generation to maintain type safety across our applications:
+
+1. Database types are defined in `packages/backend/src/types.ts`
+2. Types include full definitions for all tables, including:
+   - `Row` types for reading data
+   - `Insert` types for creating new records
+   - `Update` types for modifying existing records
+3. All database operations are fully typed through these generated types
+
+## Schema Management
+
+We maintain our database schema using Supabase migrations in `packages/backend/supabase/migrations/`. This approach provides several benefits:
+
+- **Version Control**: Track all schema changes in Git
+- **Documentation**: SQL serves as a clear, self-documenting specification
+- **Reproducibility**: Easy to recreate database structure in new environments
+- **Review Process**: Schema changes go through code review like any other change
+
+### Schema Structure
+
+Our initial schema in `20240211_initial_schema.sql` includes:
+
+```sql
+-- Core tables
+create table public.users (
+  id uuid primary key default uuid_generate_v4(),
+  email text unique not null,
+  full_name text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table public.profiles (
+  id uuid primary key references public.users(id) on delete cascade,
+  avatar_url text,
+  bio text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
+
+### Row Level Security (RLS)
+
+We enforce access control at the database level using RLS policies. Each table has explicit policies defining who can perform what operations:
+
+```sql
+-- Enable RLS
+alter table public.users enable row level security;
+alter table public.profiles enable row level security;
+
+-- Define policies
+create policy "Users can view their own profile"
+  on public.users
+  for select
+  using (auth.uid() = id);
+
+create policy "Users can update their own profile"
+  on public.users
+  for update
+  using (auth.uid() = id);
+
+create policy "Profiles are viewable by owner"
+  on public.profiles
+  for select
+  using (auth.uid() = id);
+
+create policy "Profiles are updatable by owner"
+  on public.profiles
+  for update
+  using (auth.uid() = id);
+```
+
+### Schema Updates
+
+When making schema changes:
+
+1. Generate a new migration file:
+```bash
+supabase migration new your_migration_name
+```
+
+2. Add your schema changes to the new migration file
+3. Update TypeScript types in `types.ts` to match the schema changes
+4. Test changes locally
+5. Submit PR for review, including both migration and type changes
+6. After merge, apply changes to staging/production environments
+
+### Applying Schema Changes
+
+#### Local Development
+
+To apply schema changes to your local Supabase instance:
+
+1. Start your local Supabase instance:
+```bash
+supabase start
+```
+
+2. Reset the database and apply migrations:
+```bash
+supabase db reset
+```
+
+This command will:
+- Drop all existing tables
+- Apply all migrations in sequence
+- Seed any test data if configured
+
+For incremental changes during development, you can also use the Supabase Studio UI at `http://localhost:54323` to:
+- Execute SQL commands directly
+- View and modify data
+- Test RLS policies
+- Debug real-time subscriptions
+
+#### Remote Environments
+
+For staging and production environments:
+
+1. Connect to the remote project:
+```bash
+supabase link --project-ref your-project-ref
+```
+
+2. Push migrations:
+```bash
+supabase db push
+```
+
+#### Best Practices for Schema Deployment
+
+- Always test migrations locally first
+- Create separate migration files for each logical change
+- Back up production data before applying major schema changes
+- Schedule schema updates during low-traffic periods
+- Monitor the application during and after schema updates
+- Have a rollback plan for each schema change
+- Update application code to handle both old and new schemas during deployment
+
+### Best Practices for Schema Design
+
+- Always include `created_at` and `updated_at` timestamps on tables
+- Use UUIDs for primary keys (`uuid-ossp` extension)
+- Enforce referential integrity with foreign key constraints
+- Enable RLS by default on all tables
+- Write explicit RLS policies for each operation type
+- Use timestamptz for all timestamp columns
+- Add appropriate indices for frequently queried columns
+
+## Best Practices
+
+- Always use the shared `@sfh/backend` package instead of creating separate clients
+- Implement Row Level Security (RLS) policies for all tables
+- Use TypeScript types for all database operations
+- Keep sensitive operations in edge functions using service role
+- Handle errors appropriately in all database operations
+- Use optimistic updates with real-time subscriptions for better UX
+
+## Common Patterns
+
+### Authentication Flow
+
+```typescript
+// Sign in user
+const { data, error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+});
+
+// Get authenticated user
+const { data: { user } } = await supabase.auth.getUser();
+
+// Sign out
+await supabase.auth.signOut();
+```
+
+### Real-time Subscriptions
+
+```typescript
+const channel = supabase
+  .channel('table_changes')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'messages' },
+    (payload) => {
+      // Handle real-time updates
+    }
+  )
+  .subscribe();
+```
+
+## Security Considerations
+
+- Never expose the service key in client-side code
+- Always implement RLS policies before exposing tables
+- Use service role only in secure server contexts
+- Regularly audit RLS policies and access patterns
+- Keep Supabase project URL and keys in environment variables 
