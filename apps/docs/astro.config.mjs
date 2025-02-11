@@ -37,6 +37,7 @@ export default defineConfig({
                       { label: 'Authentication', link: '/dev/stack/authentication/' },
                       { label: 'Tailwind + DaisyUI', link: '/dev/stack/styling/' },
                       { label: 'Testing', link: '/dev/stack/testing/' },
+                      { label: 'Turborepo', link: '/dev/stack/turborepo/' },
                       { label: 'Deployment', link: '/dev/stack/deployment/' },
                     ],
                   },
