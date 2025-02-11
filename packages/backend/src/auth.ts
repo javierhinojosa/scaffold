@@ -76,14 +76,17 @@ export function createSvelteAuthStore(options: {
 
   async function init() {
     try {
-      const user = await options.auth.getCurrentUser();
-      store.set({ user, loading: false });
+      const { data: { session } } = await options.auth.client.auth.getSession();
+      store.set({ user: session?.user ?? null, loading: false });
 
       options.auth.onAuthStateChange((user) => {
         store.set({ user, loading: false });
       });
     } catch (error) {
-      console.error('Error initializing auth store:', error);
+      // Suppress AuthSessionMissingError as it's expected when not logged in
+      if (error instanceof Error && error.name !== 'AuthSessionMissingError') {
+        console.error('Error initializing auth store:', error);
+      }
       store.set({ user: null, loading: false });
     }
   }

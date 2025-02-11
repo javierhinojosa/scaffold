@@ -21,8 +21,8 @@
       }
     },
     "scripts": {
-      "build": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts --external @sfh/backend",
-      "dev": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts --watch --external @sfh/backend",
+      "build": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts",
+      "dev": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts --watch",
       "lint": "eslint src/",
       "clean": "rm -rf dist"
     },
@@ -33,11 +33,10 @@
       "@supabase/supabase-js": "^2.39.3"
     },
     "devDependencies": {
-      "@sfh/backend": "workspace:*",
       "@types/node": "^20.11.16",
       "dotenv": "^16.4.1",
       "eslint": "^8.56.0",
       "tsup": "^8.0.1",
       "typescript": "^5.3.3"
     }
-  }
+}

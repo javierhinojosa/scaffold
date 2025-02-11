@@ -1,23 +1,17 @@
 ---
 import LoginForm from '../components/LoginForm.svelte';
+import Layout from '../layouts/Layout.astro';
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Login - Admin Dashboard</title>
-  </head>
-  <body>
-    <main class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full space-y-8">
-        <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <LoginForm client:load />
+<Layout title="Login - Admin Dashboard">
+  <div class="min-h-screen hero bg-base-200">
+    <div class="hero-content flex-col">
+      <div class="text-center mb-8">
+        <h1 class="text-5xl font-bold">Welcome Back!</h1>
+        <p class="py-6 text-base-content/60">Sign in to access your admin dashboard</p>
       </div>
-    </main>
-  </body>
-</html> 
+      
+      <LoginForm client:load />
+    </div>
+  </div>
+</Layout> 

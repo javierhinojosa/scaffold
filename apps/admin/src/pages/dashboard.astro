@@ -1,61 +1,53 @@
 ---
-import ProtectedLayout from '../layouts/ProtectedLayout.svelte';
-import { auth } from '../lib/auth';
+import Layout from '../layouts/Layout.astro';
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Dashboard - Admin</title>
-  </head>
-  <body>
-    <ProtectedLayout client:load>
-      <div class="min-h-screen bg-gray-100">
-        <nav class="bg-white shadow-sm">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-              <div class="flex items-center">
-                <h1 class="text-xl font-semibold">Admin Dashboard</h1>
-              </div>
-              <div class="flex items-center">
-                <button
-                  onclick="window.handleSignOut()"
-                  class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+<Layout requireAuth>
+	<main class="container mx-auto px-4 py-8">
+		<div class="min-h-screen bg-gray-100 dark:bg-gray-800">
+			<nav class="bg-white dark:bg-gray-900 shadow-sm">
+				<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div class="flex justify-between h-16">
+						<div class="flex items-center">
+							<h1 class="text-xl font-semibold dark:text-white">Admin Dashboard</h1>
+						</div>
+						<div class="flex items-center">
+							<button
+								onclick="window.handleSignOut()"
+								class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+							>
+								Sign out
+							</button>
+						</div>
+					</div>
+				</div>
+			</nav>
 
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div class="px-4 py-6 sm:px-0">
-            <div class="border-4 border-dashed border-gray-200 rounded-lg h-96 p-4">
-              <h2 class="text-2xl font-bold mb-4">Welcome to the Dashboard</h2>
-              <p class="text-gray-600">
-                This is a protected page. You need to be authenticated to view this content.
-              </p>
-            </div>
-          </div>
-        </main>
-      </div>
-    </ProtectedLayout>
+			<main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+				<div class="px-4 py-6 sm:px-0">
+					<div class="border-4 border-dashed border-gray-200 dark:border-gray-700 rounded-lg h-96 p-4 dark:bg-gray-900">
+						<h2 class="text-2xl font-bold mb-4 dark:text-white">Welcome to the Dashboard</h2>
+						<p class="text-gray-600 dark:text-gray-400">
+							This is a protected page. You need to be authenticated to view this content.
+						</p>
+					</div>
+				</div>
+			</main>
+		</div>
+	</main>
+</Layout>
 
-    <script>
-      import { auth } from '../lib/auth';
-      
-      declare global {
-        interface Window {
-          handleSignOut: () => Promise<void>;
-        }
-      }
+<script>
+	import { auth } from '../lib/auth';
+	
+	declare global {
+		interface Window {
+			handleSignOut: () => Promise<void>;
+		}
+	}
 
-      window.handleSignOut = async () => {
-        await auth.signOut();
-        window.location.href = '/login';
-      };
-    </script>
-  </body>
-</html> 
+	window.handleSignOut = async () => {
+		await auth.signOut();
+		window.location.href = '/login';
+	};
+</script> 

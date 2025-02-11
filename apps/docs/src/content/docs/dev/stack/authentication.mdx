@@ -235,22 +235,29 @@ export const authStore = createSvelteAuthStore({
 
 ## Testing
 
-Our authentication system includes comprehensive test coverage across multiple levels, from unit tests to end-to-end testing.
+Our authentication system includes comprehensive test coverage across multiple levels:
 
 ### Test Utilities
 
-We provide shared test utilities in `@sfh/testing` package to help with authentication testing:
+We provide shared test utilities in the `@sfh/testing` package to help with authentication testing:
 
 ```typescript
 // packages/testing/src/auth.ts
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@sfh/backend';
 
+// Define test user credentials
 export const TEST_USER = {
   email: 'javiereh@pm.me',
   password: 'Stewart123!',
 };
 
+// Create a test client with admin privileges
+const supabaseUrl = process.env.PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
+export const testClient = createClient<Database>(supabaseUrl, supabaseServiceKey);
+
+// Set up a test user for authentication tests
 export async function setupTestUser() {
   // Delete the user if it exists
   const { data: existingUser } = await testClient.auth.admin.listUsers();
@@ -263,13 +270,14 @@ export async function setupTestUser() {
   const { data, error } = await testClient.auth.admin.createUser({
     email: TEST_USER.email,
     password: TEST_USER.password,
-    email_confirm: true,
+    email_confirm: true, // Auto-confirm the email
   });
 
   if (error) throw error;
   return data.user;
 }
 
+// Clean up test user after tests
 export async function cleanupTestUser() {
   const { data: { users } } = await testClient.auth.admin.listUsers();
   const testUser = users.find(u => u.email === TEST_USER.email);
@@ -281,24 +289,33 @@ export async function cleanupTestUser() {
 
 ### Unit Tests
 
-Unit tests cover the core authentication functionality:
+Our unit tests cover all core authentication functionality:
 
 ```typescript
-// apps/admin/src/lib/__tests__/auth.test.ts
-import { auth } from '../lib/auth';
+// packages/backend/src/__tests__/auth.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createSupabaseAuth } from '../index';
 import { setupTestUser, cleanupTestUser, TEST_USER } from '@sfh/testing/auth';
 
-describe('Authentication', () => {
+describe('Auth', () => {
+  const auth = createSupabaseAuth(
+    process.env.PUBLIC_SUPABASE_URL!,
+    process.env.PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Set up test user before all tests
   beforeAll(async () => {
     await setupTestUser();
   });
 
+  // Clean up after all tests
   afterAll(async () => {
     await cleanupTestUser();
   });
 
-  it('should successfully sign in with correct credentials', async () => {
+  it('should sign in with correct credentials', async () => {
     const { user } = await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
+    expect(user).toBeDefined();
     expect(user?.email).toBe(TEST_USER.email);
   });
 
@@ -308,111 +325,168 @@ describe('Authentication', () => {
     ).rejects.toThrow();
   });
 
-  it('should successfully sign out', async () => {
-    await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
+  it('should sign up a new user', async () => {
+    const testEmail = 'test-signup-new@example.com';
+    const testPassword = 'TestPassword123!';
+
+    try {
+      // Clean up any existing test user first
+      const { data: { users } } = await auth.client.auth.admin.listUsers();
+      const existingUser = users.find(u => u.email === testEmail);
+      if (existingUser) {
+        await auth.client.auth.admin.deleteUser(existingUser.id);
+      }
+
+      // Test signup
+      const { user } = await auth.signUp(testEmail, testPassword);
+      expect(user).toBeDefined();
+      expect(user?.email).toBe(testEmail);
+    } finally {
+      // Always clean up after test
+      const { data: { users } } = await auth.client.auth.admin.listUsers();
+      const testUser = users.find(u => u.email === testEmail);
+      if (testUser) {
+        await auth.client.auth.admin.deleteUser(testUser.id);
+      }
+    }
+  });
+
+  it('should sign out successfully', async () => {
+    // Sign in and verify session
+    const { data: { session }, error } = await auth.client.auth.signInWithPassword({
+      email: TEST_USER.email,
+      password: TEST_USER.password,
+    });
+    expect(error).toBeNull();
+    expect(session).toBeDefined();
+    
+    // Test sign out
     await auth.signOut();
-    const currentUser = await auth.getCurrentUser();
-    expect(currentUser).toBeNull();
+    
+    // Verify session is cleared
+    const { data: { session: currentSession } } = await auth.client.auth.getSession();
+    expect(currentSession).toBeNull();
+  });
+
+  it('should handle auth state changes', async () => {
+    let authStateUser: any = null;
+    
+    // Set up auth state listener
+    const { data: { subscription } } = auth.client.auth.onAuthStateChange((_event, session) => {
+      authStateUser = session?.user ?? null;
+    });
+
+    try {
+      // Test sign in state change
+      await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(authStateUser?.email).toBe(TEST_USER.email);
+
+      // Test sign out state change
+      await auth.signOut();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(authStateUser).toBeNull();
+    } finally {
+      subscription.unsubscribe();
+    }
   });
 });
 ```
 
-### End-to-End Tests
+### Test Configuration
 
-E2E tests verify the complete authentication flow in the browser:
+We use Vitest for testing, with specific configuration for auth tests:
 
 ```typescript
-// apps/admin/e2e/auth.spec.ts
-import { test, expect } from '@playwright/test';
-import { setupTestUser, cleanupTestUser, TEST_USER } from '@sfh/testing/auth';
+// packages/backend/vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
-test.describe('Authentication Flow', () => {
-  test.beforeAll(async () => {
-    await setupTestUser();
-  });
-
-  test.afterAll(async () => {
-    await cleanupTestUser();
-  });
-
-  test('should redirect to login page when accessing protected route', async ({ page }) => {
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL('/login');
-  });
-
-  test('should login successfully and redirect to dashboard', async ({ page }) => {
-    await page.goto('/login');
-    
-    await page.fill('input[type="email"]', TEST_USER.email);
-    await page.fill('input[type="password"]', TEST_USER.password);
-    await page.click('button[type="submit"]');
-
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.locator('h1')).toContainText('Admin Dashboard');
-  });
-
-  test('should logout successfully', async ({ page }) => {
-    // Login first
-    await page.goto('/login');
-    await page.fill('input[type="email"]', TEST_USER.email);
-    await page.fill('input[type="password"]', TEST_USER.password);
-    await page.click('button[type="submit"]');
-
-    // Then logout
-    await page.click('button:has-text("Sign out")');
-    await expect(page).toHaveURL('/login');
-  });
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    setupFiles: [resolve(__dirname, '../testing/src/setup.ts')],
+    environmentMatchGlobs: [
+      ['**/*.test.ts', 'node'],
+    ],
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    deps: {
+      inline: ['@sfh/testing']
+    }
+  },
 });
 ```
 
-### Running Tests
+### Test Environment Setup
 
-To run authentication tests, you'll need to set up the required environment variables:
+Our test setup file handles environment variables and cleanup:
 
-```bash
-# .env.test
-PUBLIC_SUPABASE_URL="your-project-url"
-PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_KEY="your-service-key"  # Required for test user management
-```
+```typescript
+// packages/testing/src/setup.ts
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/svelte';
+import dotenv from 'dotenv';
 
-Then run the tests:
+// Load test environment variables
+dotenv.config({ path: '.env.test' });
 
-```bash
-# Run unit tests
-npm run test
-
-# Run E2E tests
-npm run test:e2e
+// Clean up after each test
+afterEach(() => {
+  cleanup();
+});
 ```
 
 ### Test Best Practices
 
-1. **Test User Management**:
-   - Always use the provided test utilities for user setup/cleanup
-   - Never use production credentials in tests
-   - Clean up test users after test completion
+1. **User Management**:
+   - Use `setupTestUser` and `cleanupTestUser` for consistent test user handling
+   - Clean up test users in `finally` blocks to ensure cleanup even if tests fail
+   - Use unique email addresses for signup tests to avoid conflicts
 
-2. **Test Coverage**:
-   - Test both successful and failure scenarios
-   - Include edge cases (invalid credentials, network issues)
-   - Test protected route access
-   - Verify proper redirects and error messages
+2. **Session Handling**:
+   - Always verify both successful operations and error cases
+   - Check session state after sign in/out operations
+   - Use proper error handling with `expect().rejects.toThrow()`
 
-3. **Test Organization**:
+3. **State Changes**:
+   - Properly handle auth state subscriptions
+   - Always unsubscribe from listeners in `finally` blocks
+   - Use timeouts when testing async state changes
+
+4. **Test Organization**:
    - Group related tests using `describe` blocks
    - Use clear, descriptive test names
    - Follow the Arrange-Act-Assert pattern
-
-4. **Test Isolation**:
-   - Each test should be independent
-   - Clean up any state changes after tests
-   - Don't rely on test execution order
+   - Clean up resources in `afterAll` and `finally` blocks
 
 5. **Environment Setup**:
-   - Use separate test environment
-   - Never connect to production database
-   - Use environment variables for configuration
+   - Use `.env.test` for test-specific environment variables
+   - Never use production credentials in tests
+   - Set up proper test utilities in a shared package
+
+### Running Tests
+
+To run authentication tests:
+
+1. Set up environment variables in `.env.test`:
+```bash
+PUBLIC_SUPABASE_URL="your-test-project-url"
+PUBLIC_SUPABASE_ANON_KEY="your-test-anon-key"
+SUPABASE_SERVICE_KEY="your-test-service-key"
+```
+
+2. Run the tests:
+```bash
+# Run all tests
+pnpm run test
+
+# Run tests in watch mode
+pnpm run test:watch
+
+# Run specific test file
+pnpm run test src/__tests__/auth.test.ts
+```
 
 ### Common Testing Patterns
 
@@ -424,24 +498,24 @@ test('should protect routes', async ({ page }) => {
 });
 ```
 
-2. **Testing Auth State**:
+2. **Testing Error States**:
 ```typescript
-test('should maintain auth state', async () => {
-  await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-  const user = await auth.getCurrentUser();
-  expect(user).toBeDefined();
+test('should handle invalid credentials', async () => {
+  await expect(
+    auth.signInWithEmail('invalid@email.com', 'wrongpass')
+  ).rejects.toThrow();
 });
 ```
 
-3. **Testing Error Handling**:
+3. **Testing State Changes**:
 ```typescript
-test('should handle errors', async ({ page }) => {
-  await page.fill('input[type="email"]', TEST_USER.email);
-  await page.fill('input[type="password"]', 'wrongpassword');
-  await page.click('button[type="submit"]');
-  
-  const errorMessage = await page.waitForSelector('.text-red-600');
-  expect(await errorMessage.isVisible()).toBeTruthy();
+test('should update auth state', async () => {
+  const { data: { subscription } } = auth.client.auth.onAuthStateChange(callback);
+  try {
+    // Test state changes
+  } finally {
+    subscription.unsubscribe();
+  }
 });
 ```
 
