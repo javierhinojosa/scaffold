@@ -1,36 +1,51 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
+title: SFH Monorepo Documentation
+description: Welcome to the SFH monorepo documentation - your guide to our project structure and development workflow
 template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: Discover how our monorepo is organized and learn how to contribute effectively
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get Started
+      link: /guides/getting-started/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/yourusername/sfh
+      icon: github
+      variant: secondary
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+## Welcome to SFH
 
-## Next steps
+This monorepo contains all the code and resources for the SFH project. Our repository is organized using modern development practices and tools to ensure maintainability, scalability, and developer productivity.
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+### Repository Structure
+
+The monorepo is organized into two main directories:
+
+- `apps/*` - Contains all our applications
+  - `admin` - Admin dashboard application
+  - `docs` - This documentation site
+  
+- `packages/*` - Contains shared libraries and utilities
+  - `testing` - Common testing utilities and configurations
+
+### Key Features
+
+- **Turborepo** for build system orchestration
+- **pnpm** for fast, disk-space efficient package management
+- **TypeScript** for type-safe development
+- **Automated testing** with Vitest and Playwright
+- **Modern tooling** including ESLint, Prettier, and more
+
+### Getting Started
+
+Check out our [Getting Started guide](/guides/getting-started/) to set up your development environment and make your first contribution.
+
+### Tech Stack
+
+- Node.js >=18
+- pnpm 8.15.4
+- TypeScript 5.7.3
+- Astro for web applications
+- Vitest for testing
