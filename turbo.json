@@ -16,6 +16,73 @@
     "dev": {
       "cache": false,
       "persistent": true
+    }, 
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "tests/**/*.{ts,tsx}",
+        "vitest.config.{js,ts}",
+        "tsconfig.json"
+      ],
+      "outputs": [
+        "coverage/**",
+        "test-results/**"
+      ]
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "tests/unit/**/*.{ts,tsx}",
+        "vitest.config.{js,ts}"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "tests/integration/**/*.{ts,tsx}",
+        "vitest.config.{js,ts}"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "e2e/**/*.ts",
+        "playwright.config.{js,ts}"
+      ],
+      "outputs": [
+        "playwright-report/**",
+        "test-results/**"
+      ]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:ci": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "tests/**/*.{ts,tsx}",
+        "e2e/**/*.ts",
+        "vitest.config.{js,ts}",
+        "playwright.config.{js,ts}"
+      ],
+      "outputs": [
+        "coverage/**",
+        "playwright-report/**",
+        "test-results/**"
+      ],
+      "env": ["CI"]
     }
-  }
+  },
+  "globalDependencies": [
+    "tsconfig.json",
+    ".env*"
+  ]
 }

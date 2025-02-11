@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="en" >
+	<head>
+		<script is:inline>
+			// Blocking script to set theme immediately
+			const savedTheme = localStorage.getItem('theme');
+			const theme = savedTheme && ['light', 'dark'].includes(savedTheme)
+				? savedTheme
+				: window.matchMedia('(prefers-color-scheme: dark)').matches
+				? 'dark'
+				: 'light';
+			document.documentElement.setAttribute('data-theme', theme);
+		</script>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Admin Dashboard</title>
+	</head>
+	<body>
+		<slot />
+		<script>
+			import { ThemeManager } from '../utils/theme';
+			new ThemeManager();
+		</script>
+	</body>
+</html>
+
