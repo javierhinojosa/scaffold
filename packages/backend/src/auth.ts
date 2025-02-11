@@ -9,14 +9,19 @@ export type AuthStore = {
 };
 
 export class Auth {
-  private client: SupabaseClient<Database>;
+  private supabaseClient: SupabaseClient<Database>;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
-    this.client = createClient<Database>(supabaseUrl, supabaseKey);
+    this.supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+  }
+
+  // Expose client for testing purposes
+  get client() {
+    return this.supabaseClient;
   }
 
   async signInWithEmail(email: string, password: string) {
-    const { data, error } = await this.client.auth.signInWithPassword({
+    const { data, error } = await this.supabaseClient.auth.signInWithPassword({
       email,
       password,
     });
@@ -26,7 +31,7 @@ export class Auth {
   }
 
   async signUp(email: string, password: string) {
-    const { data, error } = await this.client.auth.signUp({
+    const { data, error } = await this.supabaseClient.auth.signUp({
       email,
       password,
     });
@@ -36,18 +41,18 @@ export class Auth {
   }
 
   async signOut() {
-    const { error } = await this.client.auth.signOut();
+    const { error } = await this.supabaseClient.auth.signOut();
     if (error) throw error;
   }
 
   async getCurrentUser() {
-    const { data: { user }, error } = await this.client.auth.getUser();
+    const { data: { user }, error } = await this.supabaseClient.auth.getUser();
     if (error) throw error;
     return user;
   }
 
   onAuthStateChange(callback: (user: User | null) => void) {
-    return this.client.auth.onAuthStateChange((_event, session) => {
+    return this.supabaseClient.auth.onAuthStateChange((_event, session) => {
       callback(session?.user ?? null);
     });
   }
