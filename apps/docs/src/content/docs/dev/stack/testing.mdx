@@ -1,0 +1,303 @@
+---
+title: Testing
+description: Our comprehensive testing strategy and tooling setup
+---
+
+## Testing Strategy
+
+Our testing approach combines multiple layers of testing to ensure code quality:
+
+- **Unit Tests**: Using Vitest
+- **Component Tests**: Using Testing Library
+- **End-to-End Tests**: Using Playwright
+- **Shared Testing Utilities**: Common test helpers and configurations
+
+## Test Setup
+
+### Base Configuration
+
+Our testing setup is managed through a shared package:
+
+```ts
+// packages/testing/vitest-preset.ts
+export default {
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  },
+};
+```
+
+### Shared Setup
+
+```ts
+// packages/testing/setup.ts
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+import { cleanup } from '@testing-library/svelte';
+
+// Global test setup
+beforeEach(() => {
+  // Setup code
+});
+
+afterEach(() => {
+  cleanup();
+});
+```
+
+## Unit Testing
+
+### Writing Unit Tests
+
+```ts
+// utils/format.test.ts
+import { describe, it, expect } from 'vitest';
+import { formatDate } from './format';
+
+describe('formatDate', () => {
+  it('formats date correctly', () => {
+    const date = new Date('2024-02-14');
+    expect(formatDate(date)).toBe('Feb 14, 2024');
+  });
+});
+```
+
+### Mocking
+
+```ts
+// services/api.test.ts
+import { vi, describe, it, expect } from 'vitest';
+import { fetchData } from './api';
+
+vi.mock('./api', () => ({
+  fetchData: vi.fn(),
+}));
+
+describe('API', () => {
+  it('handles errors', async () => {
+    vi.mocked(fetchData).mockRejectedValue(new Error('Network error'));
+    // Test implementation
+  });
+});
+```
+
+## Component Testing
+
+### Testing Svelte Components
+
+```ts
+// components/Button.test.ts
+import { render, fireEvent } from '@testing-library/svelte';
+import { describe, it, expect } from 'vitest';
+import Button from './Button.svelte';
+
+describe('Button', () => {
+  it('calls onClick when clicked', async () => {
+    const onClick = vi.fn();
+    const { getByRole } = render(Button, { onClick });
+    
+    await fireEvent.click(getByRole('button'));
+    expect(onClick).toHaveBeenCalled();
+  });
+});
+```
+
+### Testing Astro Components
+
+```ts
+// components/Header.test.ts
+import { describe, it, expect } from 'vitest';
+import { render } from '@testing-library/svelte';
+import Header from './Header.astro';
+
+describe('Header', () => {
+  it('renders title', () => {
+    const { getByText } = render(Header, { title: 'Welcome' });
+    expect(getByText('Welcome')).toBeInTheDocument();
+  });
+});
+```
+
+## End-to-End Testing
+
+### Playwright Configuration
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:3000',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium' },
+    },
+    // Other browsers...
+  ],
+});
+```
+
+### Writing E2E Tests
+
+```ts
+// e2e/login.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can login', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'user@example.com');
+  await page.fill('[name="password"]', 'password');
+  await page.click('button[type="submit"]');
+  
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+## Test Utilities
+
+### Common Helpers
+
+```ts
+// packages/testing/helpers.ts
+import { render } from '@testing-library/svelte';
+
+export function renderWithProviders(Component, props = {}) {
+  return render(Component, {
+    ...props,
+    // Global providers/context
+  });
+}
+```
+
+### Custom Matchers
+
+```ts
+// packages/testing/matchers.ts
+import { expect } from 'vitest';
+
+expect.extend({
+  toBeValidDate(received) {
+    const pass = received instanceof Date && !isNaN(received);
+    return {
+      pass,
+      message: () => `expected ${received} to be a valid date`,
+    };
+  },
+});
+```
+
+## Best Practices
+
+### Test Organization
+
+```
+src/
+├── components/
+│   ├── Button.svelte
+│   ├── Button.test.ts      # Component tests
+│   └── __snapshots__/      # Snapshot files
+├── utils/
+│   ├── format.ts
+│   └── format.test.ts      # Unit tests
+└── e2e/                    # E2E tests
+    └── login.spec.ts
+```
+
+### Testing Guidelines
+
+1. **Test Coverage**
+   - Aim for 80% coverage on business logic
+   - Focus on critical user paths
+   - Test edge cases and error handling
+
+2. **Test Structure**
+   ```ts
+   describe('Component/Feature', () => {
+     beforeEach(() => {
+       // Setup
+     });
+     
+     it('should do something specific', () => {
+       // Test
+     });
+     
+     afterEach(() => {
+       // Cleanup
+     });
+   });
+   ```
+
+3. **Naming Conventions**
+   ```
+   ✅ describes-what-it-tests.test.ts
+   ✅ component-name.test.ts
+   ❌ test.ts
+   ```
+
+## Common Patterns
+
+### Testing Async Operations
+
+```ts
+test('loads data', async () => {
+  const { getByText } = render(DataLoader);
+  
+  expect(getByText('Loading...')).toBeInTheDocument();
+  await waitForElementToBeRemoved(() => getByText('Loading...'));
+  expect(getByText('Data loaded!')).toBeInTheDocument();
+});
+```
+
+### Testing Error States
+
+```ts
+test('handles errors', async () => {
+  server.use(
+    rest.get('/api/data', (req, res, ctx) => {
+      return res(ctx.status(500));
+    })
+  );
+  
+  const { getByText } = render(DataLoader);
+  await waitFor(() => {
+    expect(getByText('Error loading data')).toBeInTheDocument();
+  });
+});
+```
+
+## Running Tests
+
+```bash
+# Run unit and component tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run E2E tests with UI
+pnpm test:e2e:ui
+```
+
+## Resources
+
+- [Vitest Documentation](https://vitest.dev)
+- [Testing Library](https://testing-library.com)
+- [Playwright Documentation](https://playwright.dev)
+- [Jest DOM Matchers](https://github.com/testing-library/jest-dom) 

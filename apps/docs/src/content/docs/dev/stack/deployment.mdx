@@ -1,0 +1,292 @@
+---
+title: Deployment
+description: Our deployment infrastructure and processes using Vercel
+---
+
+## Deployment Strategy
+
+We use [Vercel](https://vercel.com) as our deployment platform for all applications in the monorepo. This provides us with:
+
+- **Zero-configuration deployments**
+- **Automatic preview deployments**
+- **Edge function capabilities**
+- **Built-in analytics and monitoring**
+- **Seamless monorepo support**
+
+## Configuration
+
+### Vercel Project Setup
+
+Each application in the monorepo is configured as a separate project in Vercel:
+
+```json
+// apps/<app-name>/vercel.json
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install"
+}
+```
+
+### Astro Adapter
+
+All applications use the Vercel adapter for Astro:
+
+```js
+// apps/<app-name>/astro.config.mjs
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel/serverless';
+
+export default defineConfig({
+  output: 'server',
+  adapter: vercel({
+    analytics: true,
+    imageService: true,
+  }),
+});
+```
+
+## Deployment Process
+
+### Production Deployments
+
+1. **Automatic Deployments**
+   - Push to `main` triggers production deployment
+   - Build process runs in Vercel's environment
+   - Zero-downtime deployments
+
+2. **Build Steps**
+   ```bash
+   # Vercel runs these commands
+   pnpm install        # Install dependencies
+   pnpm build         # Build all applications
+   pnpm test          # Run tests
+   ```
+
+### Preview Deployments
+
+Every pull request gets a preview deployment:
+
+1. **Branch Deployments**
+   - PR creation triggers preview build
+   - Unique URL for each preview
+   - Automatic updates on new commits
+
+2. **Review Process**
+   ```mermaid
+   graph LR
+     A[Create PR] --> B[Preview Build]
+     B --> C[Review Deploy]
+     C --> D[Test Features]
+     D --> E[Approve/Reject]
+   ```
+
+## Environment Configuration
+
+### Environment Variables
+
+1. **Production Variables**
+   ```env
+   NODE_ENV=production
+   DATABASE_URL=******
+   API_KEY=******
+   ```
+
+2. **Preview Variables**
+   ```env
+   NODE_ENV=preview
+   DATABASE_URL=******
+   API_KEY=******
+   ```
+
+### Secret Management
+
+- Use Vercel's encrypted environment variables
+- Different values for production/preview
+- Automatic injection during build
+
+## Monitoring and Analytics
+
+### Vercel Analytics
+
+```js
+// astro.config.mjs
+export default defineConfig({
+  adapter: vercel({
+    analytics: true,  // Enable Vercel Analytics
+    speedInsights: true,  // Enable Speed Insights
+  }),
+});
+```
+
+### Error Tracking
+
+- Automatic error reporting
+- Performance monitoring
+- Real-time alerts
+
+## CI/CD Pipeline
+
+### GitHub Actions Integration
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2
+      - run: pnpm install
+      - run: pnpm test
+      - run: pnpm build
+```
+
+### Deployment Checks
+
+1. **Pre-deployment**
+   - Linting
+   - Type checking
+   - Unit tests
+   - E2E tests
+
+2. **Post-deployment**
+   - Health checks
+   - Smoke tests
+   - Performance metrics
+
+## Performance Optimization
+
+### Build Optimization
+
+1. **Asset Optimization**
+   - Automatic image optimization
+   - JS/CSS minification
+   - Code splitting
+
+2. **Caching Strategy**
+   ```js
+   // vercel.json
+   {
+     "headers": [
+       {
+         "source": "/static/(.*)",
+         "headers": [
+           {
+             "key": "Cache-Control",
+             "value": "public, max-age=31536000, immutable"
+           }
+         ]
+       }
+     ]
+   }
+   ```
+
+### Edge Functions
+
+```ts
+// api/edge.ts
+export const config = {
+  runtime: 'edge',
+};
+
+export default function handler(request: Request) {
+  // Edge function logic
+}
+```
+
+## Rollback Procedures
+
+### Automatic Rollbacks
+
+1. **Health Check Failures**
+   - Automatic detection
+   - Instant rollback
+   - Team notification
+
+2. **Manual Rollbacks**
+   ```bash
+   # Using Vercel CLI
+   vercel rollback
+   ```
+
+## Best Practices
+
+### Deployment Guidelines
+
+1. **Pre-deployment Checklist**
+   - Run full test suite
+   - Check bundle sizes
+   - Review environment variables
+   - Verify API endpoints
+
+2. **Deployment Windows**
+   - Avoid high-traffic periods
+   - Coordinate with team
+   - Monitor initial metrics
+
+### Security Measures
+
+1. **Headers Configuration**
+   ```js
+   // vercel.json
+   {
+     "headers": [
+       {
+         "source": "/(.*)",
+         "headers": [
+           {
+             "key": "X-Content-Type-Options",
+             "value": "nosniff"
+           },
+           {
+             "key": "X-Frame-Options",
+             "value": "DENY"
+           }
+         ]
+       }
+     ]
+   }
+   ```
+
+2. **Environment Isolation**
+   - Separate production/preview environments
+   - Restricted access controls
+   - Regular security audits
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Build Failures**
+   - Check build logs
+   - Verify dependencies
+   - Check environment variables
+
+2. **Runtime Errors**
+   - Monitor error logs
+   - Check function logs
+   - Verify API responses
+
+### Debug Tools
+
+```bash
+# Vercel CLI commands
+vercel logs           # View deployment logs
+vercel inspect        # Inspect deployment
+vercel env pull      # Download env variables
+```
+
+## Resources
+
+- [Vercel Documentation](https://vercel.com/docs)
+- [Astro Vercel Adapter](https://docs.astro.build/en/guides/integrations-guide/vercel/)
+- [Edge Functions](https://vercel.com/features/edge-functions)
+- [Vercel CLI](https://vercel.com/cli) 

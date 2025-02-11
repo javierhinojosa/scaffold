@@ -1,0 +1,274 @@
+---
+title: Styling with Tailwind & DaisyUI
+description: Our approach to styling applications using Tailwind CSS and DaisyUI
+---
+
+## Styling Stack
+
+Our styling approach combines two powerful tools:
+- [Tailwind CSS](https://tailwindcss.com) for utility-first styling
+- [DaisyUI](https://daisyui.com) for pre-built component classes
+
+## Setup
+
+### Base Configuration
+
+Each application includes the following setup:
+
+```js
+// tailwind.config.mjs
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/**/*.{astro,html,js,jsx,svelte,ts,tsx,vue}',
+  ],
+  theme: {
+    extend: {
+      // Custom theme extensions
+    },
+  },
+  plugins: [
+    require('daisyui'),
+  ],
+};
+```
+
+### Integration with Astro
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import tailwind from '@astrojs/tailwind';
+
+export default defineConfig({
+  integrations: [
+    tailwind({
+      // Config options here
+    }),
+  ],
+});
+```
+
+## Tailwind CSS Usage
+
+### Core Principles
+
+1. **Utility-First**
+   - Use utility classes for styling
+   - Avoid custom CSS when possible
+   - Leverage Tailwind's design system
+
+2. **Responsive Design**
+   ```html
+   <div class="w-full md:w-1/2 lg:w-1/3">
+     <!-- Responsive content -->
+   </div>
+   ```
+
+3. **State Variants**
+   ```html
+   <button class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700">
+     Click me
+   </button>
+   ```
+
+### Custom Theme
+
+We extend Tailwind's theme with our brand colors and values:
+
+```js
+// tailwind.config.mjs
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f9ff',
+          // ... other shades
+          900: '#0c4a6e',
+        },
+        // ... other custom colors
+      },
+      spacing: {
+        // Custom spacing values
+      },
+    },
+  },
+};
+```
+
+### Common Patterns
+
+1. **Layout Components**
+   ```astro
+   <div class="container mx-auto px-4 py-8">
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <!-- Content -->
+     </div>
+   </div>
+   ```
+
+2. **Card Patterns**
+   ```astro
+   <div class="rounded-lg shadow-md bg-white p-6">
+     <h2 class="text-xl font-semibold mb-4">Title</h2>
+     <p class="text-gray-600">Content</p>
+   </div>
+   ```
+
+3. **Form Elements**
+   ```astro
+   <form class="space-y-4">
+     <div class="flex flex-col">
+       <label class="text-sm font-medium mb-1">Email</label>
+       <input type="email" class="rounded border p-2" />
+     </div>
+   </form>
+   ```
+
+## DaisyUI Integration
+
+### Theme Configuration
+
+We use DaisyUI's theming system:
+
+```js
+// tailwind.config.mjs
+export default {
+  daisyui: {
+    themes: [
+      {
+        light: {
+          primary: '#0ea5e9',
+          secondary: '#7c3aed',
+          // ... other theme colors
+        },
+        dark: {
+          // Dark theme colors
+        },
+      },
+    ],
+  },
+};
+```
+
+### Component Usage
+
+1. **Buttons**
+   ```html
+   <button class="btn btn-primary">Primary</button>
+   <button class="btn btn-secondary btn-outline">Secondary</button>
+   ```
+
+2. **Forms**
+   ```html
+   <div class="form-control">
+     <label class="label">
+       <span class="label-text">Email</span>
+     </label>
+     <input type="email" class="input input-bordered" />
+   </div>
+   ```
+
+3. **Modals**
+   ```html
+   <dialog class="modal">
+     <div class="modal-box">
+       <h3 class="font-bold text-lg">Hello!</h3>
+       <p class="py-4">Modal content</p>
+       <div class="modal-action">
+         <button class="btn">Close</button>
+       </div>
+     </div>
+   </dialog>
+   ```
+
+## Best Practices
+
+### Organization
+
+1. **Component-Specific Styles**
+   ```svelte
+   <!-- Button.svelte -->
+   <button class="btn {variant} {$$props.class}">
+     <slot />
+   </button>
+   ```
+
+2. **Global Styles**
+   ```css
+   /* src/styles/global.css */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   
+   @layer base {
+     /* Base styles */
+   }
+   ```
+
+### Performance
+
+1. **Purging Unused Styles**
+   - Configure content paths correctly
+   - Include dynamic class patterns
+   - Monitor bundle size
+
+2. **Dynamic Classes**
+   ```ts
+   const classes = clsx(
+     'base-class',
+     variant === 'primary' && 'btn-primary',
+     size === 'large' && 'btn-lg'
+   );
+   ```
+
+### Maintainability
+
+1. **Extract Components**
+   - Create reusable UI components
+   - Use consistent class patterns
+   - Document component variants
+
+2. **Theme Constants**
+   ```ts
+   // theme.ts
+   export const SIZES = {
+     sm: 'text-sm px-2 py-1',
+     md: 'text-base px-4 py-2',
+     lg: 'text-lg px-6 py-3',
+   };
+   ```
+
+## Common Patterns
+
+### Responsive Design
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <!-- Responsive grid -->
+</div>
+```
+
+### Dark Mode
+
+```html
+<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+  <!-- Dark mode compatible content -->
+</div>
+```
+
+### Animation
+
+```html
+<button class="transition-all hover:scale-105 active:scale-95">
+  Animated Button
+</button>
+```
+
+## Resources
+
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [DaisyUI Components](https://daisyui.com/components)
+- [Tailwind CSS Cheat Sheet](https://nerdcave.com/tailwind-cheat-sheet)
+- [Astro Tailwind Integration](https://docs.astro.build/en/guides/integrations-guide/tailwind/) 

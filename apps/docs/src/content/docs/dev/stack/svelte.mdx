@@ -1,0 +1,273 @@
+---
+title: Svelte
+description: How we use Svelte for interactive components in our Astro applications
+---
+
+## Why Svelte?
+
+We chose [Svelte](https://svelte.dev) (v5) as our primary UI framework for interactive components because:
+
+- **Zero Runtime**: Components compile to vanilla JavaScript
+- **Runes**: Modern reactivity system with signals and stores
+- **TypeScript First**: Excellent type safety and developer experience
+- **Small Bundle Size**: Minimal impact on application performance
+- **Simple Learning Curve**: Intuitive syntax and concepts
+
+## Integration with Astro
+
+### Setup
+
+Each application using Svelte includes the following configuration:
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import svelte from '@astrojs/svelte';
+
+export default defineConfig({
+  integrations: [svelte()],
+});
+```
+
+### Client Directives
+
+We follow specific patterns for hydrating Svelte components:
+
+```astro
+---
+// pages/example.astro
+import InteractiveCounter from '../components/InteractiveCounter.svelte';
+import LazyLoadedComponent from '../components/LazyLoadedComponent.svelte';
+---
+
+<!-- Hydrate immediately on page load -->
+<InteractiveCounter client:load />
+
+<!-- Hydrate when component becomes visible -->
+<LazyLoadedComponent client:visible />
+```
+
+## Component Patterns
+
+### State Management
+
+We use Svelte's new Runes for state management:
+
+```svelte
+<!-- components/Counter.svelte -->
+<script>
+  let count = $state(0);
+  
+  function increment() {
+    count++;
+  }
+</script>
+
+<button on:click={increment}>
+  Count: {count}
+</button>
+```
+
+### Shared State
+
+For state that needs to be shared between components:
+
+```ts
+// stores/theme.ts
+import { writable } from 'svelte/store';
+
+export const theme = writable('light');
+```
+
+```svelte
+<!-- components/ThemeToggle.svelte -->
+<script>
+  import { theme } from '../stores/theme';
+  
+  function toggleTheme() {
+    $theme = $theme === 'light' ? 'dark' : 'light';
+  }
+</script>
+
+<button on:click={toggleTheme}>
+  Current theme: {$theme}
+</button>
+```
+
+### TypeScript Integration
+
+We enforce strict typing in our Svelte components:
+
+```svelte
+<!-- components/UserProfile.svelte -->
+<script lang="ts">
+  interface Props {
+    userId: string;
+    name: string;
+    email?: string;
+  }
+
+  let { userId, name, email } = $props<Props>();
+  
+  let userDetails = $state<UserDetails | null>(null);
+  
+  async function loadUserDetails() {
+    userDetails = await fetchUserDetails(userId);
+  }
+</script>
+```
+
+### Component Events
+
+We use typed events for component communication:
+
+```svelte
+<!-- components/SearchInput.svelte -->
+<script lang="ts">
+  import type { SearchEvent } from '../types';
+  
+  const dispatch = createEventDispatcher<{
+    search: SearchEvent;
+  }>();
+  
+  let query = $state('');
+  
+  function handleSubmit() {
+    dispatch('search', { query });
+  }
+</script>
+```
+
+## Testing Svelte Components
+
+### Unit Testing with Vitest
+
+```ts
+// components/Counter.test.ts
+import { render, fireEvent } from '@testing-library/svelte';
+import Counter from './Counter.svelte';
+
+test('increments count when clicked', async () => {
+  const { getByText } = render(Counter);
+  const button = getByText('Count: 0');
+  
+  await fireEvent.click(button);
+  expect(getByText('Count: 1')).toBeInTheDocument();
+});
+```
+
+### Component Stories
+
+We document our components using stories:
+
+```svelte
+<!-- stories/Button.story.svelte -->
+<script lang="ts">
+  import Button from '../components/Button.svelte';
+</script>
+
+<div class="story">
+  <Button variant="primary">Primary Button</Button>
+  <Button variant="secondary">Secondary Button</Button>
+</div>
+```
+
+## Best Practices
+
+### Component Organization
+
+```
+src/components/
+├── ui/              # Reusable UI components
+│   ├── Button.svelte
+│   └── Input.svelte
+├── features/        # Feature-specific components
+│   └── auth/
+│       ├── LoginForm.svelte
+│       └── SignupForm.svelte
+└── layout/          # Layout components
+    └── Sidebar.svelte
+```
+
+### Performance Guidelines
+
+1. **Lazy Loading**
+   - Use `client:visible` for below-the-fold components
+   - Split large components into smaller chunks
+   - Use dynamic imports for heavy features
+
+2. **State Management**
+   - Use local state when possible
+   - Share state through stores only when necessary
+   - Consider using derived stores for computed values
+
+3. **Event Handling**
+   - Use typed event dispatchers
+   - Debounce frequent events
+   - Clean up event listeners in `onDestroy`
+
+### Code Style
+
+```svelte
+<!-- Preferred component structure -->
+<script lang="ts">
+  // 1. Imports
+  import { onMount } from 'svelte';
+  
+  // 2. Props
+  let { title } = $props<{ title: string }>();
+  
+  // 3. State
+  let isLoading = $state(false);
+  
+  // 4. Lifecycle
+  onMount(() => {
+    // Setup
+  });
+  
+  // 5. Methods
+  function handleClick() {
+    // Event handling
+  }
+</script>
+
+<!-- 6. Template -->
+<div class="component">
+  {#if isLoading}
+    <Loading />
+  {:else}
+    <h1>{title}</h1>
+  {/if}
+</div>
+
+<!-- 7. Styles -->
+<style lang="postcss">
+  .component {
+    @apply p-4;
+  }
+</style>
+```
+
+## Common Gotchas
+
+1. **SSR Considerations**
+   - Avoid `window` in component initialization
+   - Handle hydration mismatches
+   - Use `onMount` for browser-only code
+
+2. **TypeScript Integration**
+   - Always use `lang="ts"` in components
+   - Define prop interfaces
+   - Type event dispatchers
+
+3. **State Management**
+   - Be careful with store subscriptions
+   - Clean up subscriptions in `onDestroy`
+   - Use `$state` for reactive primitives
+
+## Resources
+
+- [Svelte Documentation](https://svelte.dev/docs)
+- [Svelte Kit Documentation](https://kit.svelte.dev/docs)
+- [Astro + Svelte Integration](https://docs.astro.build/en/guides/integrations-guide/svelte/)
+- [Testing Library Svelte](https://testing-library.com/docs/svelte-testing-library/intro/) 

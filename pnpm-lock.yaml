@@ -100,6 +100,9 @@ importers:
       sharp:
         specifier: ^0.32.5
         version: 0.32.6
+      starlight-sidebar-topics-dropdown:
+        specifier: ^0.3.0
+        version: 0.3.0(@astrojs/starlight@0.31.1(astro@5.2.5(@types/node@22.13.1)(jiti@2.4.2)(lightningcss@1.29.1)(rollup@4.34.6)(typescript@5.7.3)))
 
   packages/testing:
     dependencies:
@@ -3080,6 +3083,12 @@ packages:
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
+
+  starlight-sidebar-topics-dropdown@0.3.0:
+    resolution: {integrity: sha512-FuOYMNy+ZwXoArV5nvTqSc7tUTnxeJGF9wks3IgYBaE7A/yBRtTR+pBHA5re+1edGxP/O1B63L7N5dB4SMGtgQ==}
+    engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.30'
 
   std-env@3.8.0:
     resolution: {integrity: sha512-Bc3YwwCB+OzldMxOXJIIvC6cPRWr/LxOp48CdQTOkPyk/t4JWWJbrilwBd7RJzKV8QW7tJkcgAmeuLLJugl5/w==}
@@ -7368,6 +7377,10 @@ snapshots:
   sprintf-js@1.0.3: {}
 
   stackback@0.0.2: {}
+
+  starlight-sidebar-topics-dropdown@0.3.0(@astrojs/starlight@0.31.1(astro@5.2.5(@types/node@22.13.1)(jiti@2.4.2)(lightningcss@1.29.1)(rollup@4.34.6)(typescript@5.7.3))):
+    dependencies:
+      '@astrojs/starlight': 0.31.1(astro@5.2.5(@types/node@22.13.1)(jiti@2.4.2)(lightningcss@1.29.1)(rollup@4.34.6)(typescript@5.7.3))
 
   std-env@3.8.0: {}
 

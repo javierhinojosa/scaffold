@@ -1,0 +1,179 @@
+---
+title: Astro
+description: How we use Astro across our applications in the monorepo
+---
+
+## Why Astro?
+
+We chose [Astro](https://astro.build) as our core web framework for several key reasons:
+
+- **Performance First**: Zero-JS by default with optional hydration
+- **Framework Agnostic**: Freedom to use any UI framework (we primarily use Svelte)
+- **Full-Stack Capabilities**: Built-in API routes and server-side rendering
+- **Modern Developer Experience**: TypeScript, hot module reloading, and great DX
+- **Monorepo Friendly**: Excellent support for sharing code and components
+
+## How We Use Astro
+
+### Project Configuration
+
+Each Astro application in our monorepo follows a consistent configuration pattern:
+
+```js
+// apps/<app-name>/astro.config.mjs
+import { defineConfig } from 'astro/config';
+import svelte from '@astrojs/svelte';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  output: 'server',  // We use SSR for all applications
+  integrations: [
+    svelte(),        // Svelte integration for components
+  ],
+  adapter: vercel(), // Consistent deployment target
+});
+```
+
+### Project Structure
+
+We maintain a consistent structure across all Astro applications:
+
+```
+apps/<app-name>/
+├── src/
+│   ├── components/  # Shared components for the app
+│   │   ├── ui/     # Generic UI components
+│   │   └── layout/ # Layout-specific components
+│   ├── layouts/    # Page layouts and templates
+│   ├── pages/      # File-based routing
+│   │   └── api/    # API endpoints
+│   ├── styles/     # Global styles and Tailwind
+│   └── utils/      # Shared utilities
+└── public/         # Static assets
+```
+
+### Shared Patterns
+
+#### Layouts
+
+We use consistent layout patterns across applications:
+
+```astro
+---
+// src/layouts/Layout.astro
+import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{title}</title>
+    <ViewTransitions />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+```
+
+#### API Routes
+
+API routes follow a standard pattern:
+
+```ts
+// src/pages/api/[resource].ts
+import type { APIRoute } from 'astro';
+
+export const GET: APIRoute = async ({ params, request }) => {
+  // Type-safe API handling
+  return new Response(JSON.stringify({ 
+    message: 'Success' 
+  }));
+};
+```
+
+### Integration with Other Tools
+
+#### TypeScript
+
+We leverage Astro's built-in TypeScript support:
+- Type-safe props using `interface Props`
+- Type-safe API routes using `APIRoute`
+- Shared types across the monorepo
+
+#### Tailwind CSS
+
+Astro integrates seamlessly with our Tailwind setup:
+```astro
+---
+// src/components/Button.astro
+interface Props {
+  variant?: 'primary' | 'secondary';
+}
+
+const { variant = 'primary' } = Astro.props;
+---
+
+<button class:list={[
+  'px-4 py-2 rounded',
+  {
+    'bg-blue-500 text-white': variant === 'primary',
+    'bg-gray-200 text-gray-800': variant === 'secondary',
+  }
+]}>
+  <slot />
+</button>
+```
+
+### Best Practices
+
+1. **File Organization**
+   - Keep pages lightweight, move logic to components
+   - Use `.astro` for static components, `.svelte` for interactive ones
+   - Organize API routes by resource
+
+2. **Performance**
+   - Use `client:load` sparingly
+   - Leverage View Transitions API
+   - Implement proper caching strategies
+
+3. **Type Safety**
+   - Define prop interfaces for all components
+   - Use type-safe API routes
+   - Share types across the monorepo
+
+4. **Code Sharing**
+   - Use workspace packages for shared code
+   - Create reusable components in UI library
+   - Share utilities across applications
+
+### Common Gotchas
+
+1. **SSR Considerations**
+   - Be mindful of `window` usage
+   - Handle loading states appropriately
+   - Use `client:only` when necessary
+
+2. **Build Performance**
+   - Keep dependencies lean
+   - Use dynamic imports for large libraries
+   - Optimize image assets
+
+3. **Development Workflow**
+   - Use `pnpm dev --filter <app>` for development
+   - Leverage HMR effectively
+   - Monitor build sizes
+
+### Resources
+
+- [Astro Documentation](https://docs.astro.build)
+- [Astro + Svelte Guide](https://docs.astro.build/en/guides/integrations-guide/svelte/)
+- [Astro SSR Guide](https://docs.astro.build/en/guides/server-side-rendering/) 

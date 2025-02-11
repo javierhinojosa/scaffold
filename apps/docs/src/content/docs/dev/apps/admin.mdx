@@ -1,0 +1,140 @@
+---
+title: Admin Dashboard
+description: Learn about our Admin Dashboard application and the frontend technology stack we use across our applications
+---
+
+## Overview
+
+The Admin Dashboard is built using our standard frontend stack, which combines modern technologies for optimal developer experience and performance. This stack serves as a template for all our frontend applications.
+
+## Technology Stack
+
+### Core Framework: Astro
+
+We use [Astro](https://astro.build) as our core web framework, chosen for its:
+- **Performance**: Zero-JS by default with optional hydration
+- **Component Islands**: Selective hydration for interactive components
+- **Framework Flexibility**: Ability to use multiple frameworks in one project
+- **Server-Side Rendering**: Built-in SSR support for better performance and SEO
+
+Our Astro setup includes:
+```js
+// astro.config.mjs
+export default defineConfig({
+  output: 'server',  // Server-side rendering mode
+  integrations: [svelte()],
+  adapter: vercel()  // Deployment target
+})
+```
+
+### UI Framework: Svelte
+
+We use [Svelte](https://svelte.dev) (v5) as our primary UI framework:
+- **Zero-runtime overhead**: Svelte compiles to vanilla JavaScript
+- **Reactive by default**: Built-in reactivity system
+- **Minimal boilerplate**: Clean, intuitive syntax
+- **TypeScript support**: Full type safety
+
+### Styling Solution
+
+Our styling stack combines several powerful tools:
+
+#### Tailwind CSS
+We use [Tailwind CSS](https://tailwindcss.com) for utility-first styling:
+- **Consistent design system**: Predefined design tokens
+- **Performance**: Only includes used styles
+- **Developer experience**: Quick iterations with utility classes
+
+#### DaisyUI
+[DaisyUI](https://daisyui.com) provides component classes on top of Tailwind:
+- **Ready-to-use components**: Buttons, cards, modals, etc.
+- **Themeable**: Easy customization
+- **Semantic classes**: More maintainable than raw utility classes
+
+Our Tailwind configuration:
+```js
+// tailwind.config.mjs
+export default {
+  content: ['./src/**/*.{html,js,jsx,ts,tsx,vue,svelte,astro}'],
+  plugins: [
+    require('daisyui'),
+  ],
+}
+```
+
+### Testing Infrastructure
+
+We maintain comprehensive testing coverage using:
+
+- **Vitest**: Unit and integration testing
+  - Fast execution
+  - Native TypeScript support
+  - Jest-compatible API
+
+- **Playwright**: End-to-end testing
+  - Cross-browser testing
+  - Visual regression testing
+  - Network interception
+
+Available testing commands:
+```bash
+# Unit tests
+pnpm test
+pnpm test:watch
+pnpm test:coverage
+
+# E2E tests
+pnpm test:e2e
+pnpm test:e2e:ui  # With UI mode
+```
+
+### Deployment
+
+We deploy to [Vercel](https://vercel.com) using the `@astrojs/vercel` adapter:
+- **Zero-config deployments**: Automatic build detection
+- **Edge functions**: Global low-latency
+- **Preview deployments**: Every PR gets a preview URL
+- **Analytics**: Built-in performance monitoring
+
+## Project Structure
+
+The Admin application follows a standard Astro project structure:
+
+```
+apps/admin/
+├── src/
+│   ├── components/    # Reusable UI components
+│   ├── layouts/       # Page layouts
+│   ├── pages/         # Route definitions
+│   ├── styles/        # Global styles
+│   └── utils/         # Shared utilities
+├── public/           # Static assets
+├── e2e/              # End-to-end tests
+└── tests/            # Unit tests
+```
+
+## Development Workflow
+
+1. Start the development server:
+   ```bash
+   pnpm dev --filter admin
+   ```
+
+2. Access the application at `http://localhost:3000`
+
+3. Changes to files in `src/` trigger automatic hot reload
+
+4. Run tests frequently during development:
+   ```bash
+   pnpm test:watch --filter admin
+   ```
+
+## Best Practices
+
+- Use TypeScript for all new code
+- Follow component-driven development
+- Write tests for new features
+- Use Svelte stores for state management
+- Leverage Astro's partial hydration
+- Style with Tailwind utility classes
+- Use DaisyUI components when available 
