@@ -33,10 +33,18 @@ describe('Auth', () => {
   });
 
   it('should sign up a new user', async () => {
-    const testEmail = 'test-signup@example.com';
+    const testEmail = 'test-signup-new@example.com';
     const testPassword = 'TestPassword123!';
 
     try {
+      // First cleanup any existing test user
+      const { data: { users } } = await auth.client.auth.admin.listUsers();
+      const existingUser = users.find(u => u.email === testEmail);
+      if (existingUser) {
+        await auth.client.auth.admin.deleteUser(existingUser.id);
+      }
+
+      // Then try to sign up
       const { user } = await auth.signUp(testEmail, testPassword);
       expect(user).toBeDefined();
       expect(user?.email).toBe(testEmail);
@@ -52,10 +60,11 @@ describe('Auth', () => {
 
   it('should sign out successfully', async () => {
     // First sign in and get the session
-    const { session } = await auth.client.auth.signInWithPassword({
+    const { data: { session }, error } = await auth.client.auth.signInWithPassword({
       email: TEST_USER.email,
       password: TEST_USER.password,
     });
+    expect(error).toBeNull();
     expect(session).toBeDefined();
     
     // Then sign out
