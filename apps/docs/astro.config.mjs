@@ -46,6 +46,7 @@ export default defineConfig({
                     items: [
                       { label: 'Admin Dashboard', link: '/dev/apps/admin/' },
                       { label: 'Documentation Site', link: '/dev/apps/docs/' },
+                      { label: 'Dify', link: '/dev/apps/dify/' },
                     ],
                   },
                   {

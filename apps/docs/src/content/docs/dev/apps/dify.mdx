@@ -1,0 +1,259 @@
+---
+title: Dify
+description: How we use Dify as our LLM backend service using Docker Compose
+---
+
+## Overview
+
+[Dify](https://dify.ai) is our LLM (Large Language Model) backend service that provides:
+
+- **LLM Application Development**: Build and manage AI applications
+- **Prompt Management**: Version and manage prompts effectively
+- **API Access**: RESTful APIs for AI capabilities
+- **Multi-Model Support**: Integration with various LLM providers
+- **Vector Database**: Built-in vector storage for embeddings
+
+## Architecture
+
+Our Dify setup consists of several components running in Docker containers:
+
+1. **Web Interface**: Frontend application for managing AI applications
+2. **API Service**: Backend service handling requests and LLM interactions
+3. **Database**: PostgreSQL for storing application data
+4. **Redis**: For caching and message queuing
+5. **Vector Store**: Weaviate for storing and querying embeddings
+
+## Docker Setup
+
+### Directory Structure
+
+```
+apps/dify/
+├── docker/
+│   ├── docker-compose.yaml         # Main compose file
+│   └── docker-compose.middleware.yaml  # Database & cache services
+├── api/                           # API service code
+├── web/                           # Web interface code
+└── Makefile                      # Build and deployment commands
+```
+
+### Environment Configuration
+
+Key environment variables that need to be configured:
+
+```env
+# Core Settings
+CONSOLE_API_URL=http://localhost:5001/console/api
+CONSOLE_WEB_URL=http://localhost:3000
+SERVICE_API_URL=http://localhost:5001/v1
+
+# Database Configuration
+DB_USERNAME=postgres
+DB_PASSWORD=difyai123456
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=dify
+
+# Redis Configuration
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=difyai123456
+
+# Vector Store (Default: Weaviate)
+VECTOR_STORE=weaviate
+WEAVIATE_ENDPOINT=http://weaviate:8080
+WEAVIATE_API_KEY=your-api-key
+
+# Storage Configuration
+STORAGE_TYPE=opendal
+OPENDAL_SCHEME=fs
+OPENDAL_FS_ROOT=storage
+```
+
+## Deployment
+
+### Prerequisites
+
+1. Docker and Docker Compose installed
+2. At least 4GB RAM available
+3. Port 3000 (web) and 5001 (API) available
+
+### Starting Services
+
+1. **Start Core Services**:
+   ```bash
+   docker compose -f docker/docker-compose.yaml up -d
+   ```
+
+2. **Start with Dependencies**:
+   ```bash
+   docker compose -f docker/docker-compose.yaml -f docker/docker-compose.middleware.yaml up -d
+   ```
+
+### Building Images
+
+Use the provided Makefile commands:
+
+```bash
+# Build all images
+make build-all
+
+# Build specific components
+make build-web
+make build-api
+
+# Build and push
+make build-push-all
+```
+
+## Development
+
+### Local Development
+
+1. **Clone Repository**:
+   ```bash
+   git clone https://github.com/yourusername/sfh.git
+   cd sfh/apps/dify
+   ```
+
+2. **Environment Setup**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configurations
+   ```
+
+3. **Start Dependencies**:
+   ```bash
+   docker compose -f docker/docker-compose.middleware.yaml up -d
+   ```
+
+4. **Run Services**:
+   ```bash
+   # API Service
+   cd api && pnpm dev
+
+   # Web Interface
+   cd web && pnpm dev
+   ```
+
+### Testing
+
+1. **API Tests**:
+   ```bash
+   cd api && pnpm test
+   ```
+
+2. **Web Tests**:
+   ```bash
+   cd web && pnpm test
+   ```
+
+## Configuration
+
+### Vector Store Options
+
+Dify supports multiple vector stores:
+
+1. **Weaviate** (Default):
+   ```env
+   VECTOR_STORE=weaviate
+   WEAVIATE_ENDPOINT=http://weaviate:8080
+   ```
+
+2. **Qdrant**:
+   ```env
+   VECTOR_STORE=qdrant
+   QDRANT_URL=http://qdrant:6333
+   ```
+
+3. **Milvus**:
+   ```env
+   VECTOR_STORE=milvus
+   MILVUS_URI=http://milvus:19530
+   ```
+
+### Storage Configuration
+
+Dify supports various storage backends:
+
+1. **Local FileSystem** (Default):
+   ```env
+   STORAGE_TYPE=opendal
+   OPENDAL_SCHEME=fs
+   OPENDAL_FS_ROOT=storage
+   ```
+
+2. **S3**:
+   ```env
+   STORAGE_TYPE=opendal
+   OPENDAL_SCHEME=s3
+   S3_BUCKET_NAME=your-bucket
+   S3_ACCESS_KEY=your-access-key
+   S3_SECRET_KEY=your-secret-key
+   ```
+
+## Monitoring
+
+### Logs
+
+Access container logs:
+
+```bash
+# API Service logs
+docker compose -f docker/docker-compose.yaml logs -f api
+
+# Web Interface logs
+docker compose -f docker/docker-compose.yaml logs -f web
+```
+
+### Health Checks
+
+Monitor service health:
+
+1. **API Health**:
+   ```bash
+   curl http://localhost:5001/health
+   ```
+
+2. **Web Health**:
+   ```bash
+   curl http://localhost:3000/health
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Issues**:
+   - Check DB_HOST and DB_PORT settings
+   - Verify database container is running
+   - Check network connectivity
+
+2. **Vector Store Connection**:
+   - Verify vector store service is running
+   - Check endpoint configuration
+   - Validate API keys
+
+3. **Storage Issues**:
+   - Check storage configuration
+   - Verify permissions on storage directory
+   - Validate cloud storage credentials
+
+### Maintenance
+
+1. **Backup Database**:
+   ```bash
+   docker compose -f docker/docker-compose.middleware.yaml exec db pg_dump -U postgres dify > backup.sql
+   ```
+
+2. **Clear Cache**:
+   ```bash
+   docker compose -f docker/docker-compose.middleware.yaml exec redis redis-cli FLUSHALL
+   ```
+
+## Resources
+
+- [Dify Documentation](https://docs.dify.ai)
+- [Dify GitHub Repository](https://github.com/langgenius/dify)
+- [Docker Documentation](https://docs.docker.com/compose/)
+- [Vector Store Documentation](https://docs.dify.ai/getting-started/vector-store) 
