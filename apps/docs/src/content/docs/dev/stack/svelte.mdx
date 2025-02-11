@@ -41,7 +41,7 @@ import LazyLoadedComponent from '../components/LazyLoadedComponent.svelte';
 ---
 
 <!-- Hydrate immediately on page load -->
-<InteractiveCounter client:load />
+<InteractiveComponent client:load />
 
 <!-- Hydrate when component becomes visible -->
 <LazyLoadedComponent client:visible />
@@ -156,38 +156,7 @@ test('increments count when clicked', async () => {
 });
 ```
 
-### Component Stories
-
-We document our components using stories:
-
-```svelte
-<!-- stories/Button.story.svelte -->
-<script lang="ts">
-  import Button from '../components/Button.svelte';
-</script>
-
-<div class="story">
-  <Button variant="primary">Primary Button</Button>
-  <Button variant="secondary">Secondary Button</Button>
-</div>
-```
-
 ## Best Practices
-
-### Component Organization
-
-```
-src/components/
-├── ui/              # Reusable UI components
-│   ├── Button.svelte
-│   └── Input.svelte
-├── features/        # Feature-specific components
-│   └── auth/
-│       ├── LoginForm.svelte
-│       └── SignupForm.svelte
-└── layout/          # Layout components
-    └── Sidebar.svelte
-```
 
 ### Performance Guidelines
 

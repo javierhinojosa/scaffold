@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightSidebarTopicsDropdown from 'starlight-sidebar-topics-dropdown'
 import vercel from '@astrojs/vercel';
+import starlightLinksValidator from 'starlight-links-validator'
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,6 +14,7 @@ export default defineConfig({
         github: 'https://github.com/yourusername/sfh',
       },
       plugins: [
+        starlightLinksValidator(),
         starlightSidebarTopicsDropdown([
           {
             label: 'Development',

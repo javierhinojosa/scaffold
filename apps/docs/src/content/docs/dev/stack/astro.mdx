@@ -13,55 +13,300 @@ We chose [Astro](https://astro.build) as our core web framework for several key 
 - **Modern Developer Experience**: TypeScript, hot module reloading, and great DX
 - **Monorepo Friendly**: Excellent support for sharing code and components
 
-## How We Use Astro
+## Configuration
 
-### Project Configuration
+### Base Setup
 
 Each Astro application in our monorepo follows a consistent configuration pattern:
 
 ```js
-// apps/<app-name>/astro.config.mjs
+// apps/admin/astro.config.mjs
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
+import tailwindcss from '@tailwindcss/vite';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  output: 'server',  // We use SSR for all applications
+  // Disable the default dev toolbar for cleaner development
+  devToolbar: {
+    enabled: false
+  },
+
+  // Enable server-side rendering
+  output: 'server',
+
+  // Configure integrations
   integrations: [
-    svelte(),        // Svelte integration for components
+    // Enable Svelte components
+    svelte()
   ],
-  adapter: vercel(), // Consistent deployment target
+
+  // Configure Vite plugins
+  vite: {
+    plugins: [
+      // Enable Tailwind CSS
+      tailwindcss()
+    ]
+  },
+
+  // Configure deployment adapter
+  adapter: vercel()
 });
 ```
 
-### Project Structure
+### Dependencies
 
-We maintain a consistent structure across all Astro applications:
+Our Astro applications use the following core dependencies:
+
+```json
+{
+  "dependencies": {
+    "@astrojs/svelte": "^7.0.4",
+    "@astrojs/vercel": "^8.0.6",
+    "@tailwindcss/vite": "^4.0.6",
+    "astro": "^5.2.5",
+    "svelte": "^5.19.9"
+  }
+}
+```
+
+## Project Structure
+
+Most of our development work happens in the `components/` directory, where we organize code based on the application's specific needs. The structure is intentionally flexible, allowing teams to organize components in a way that makes sense for their application.
 
 ```
-apps/<app-name>/
+apps/admin/
 ├── src/
-│   ├── components/  # Shared components for the app
-│   │   ├── ui/     # Generic UI components
-│   │   └── layout/ # Layout-specific components
-│   ├── layouts/    # Page layouts and templates
-│   ├── pages/      # File-based routing
-│   │   └── api/    # API endpoints
-│   ├── styles/     # Global styles and Tailwind
-│   └── utils/      # Shared utilities
-└── public/         # Static assets
+│   ├── components/              # Where most development happens
+│   │   ├── */**/*.svelte        # Flexible organization by feature/domain/etc.
+│   │   └── *.test.ts            # Co-located tests with components
+│   ├── layouts/                 # Base page layouts (rarely modified)
+│   ├── pages/                   # Route definitions (minimal logic)
+│   │   └── api/                 # API endpoints
+│   ├── styles/                  # Global styles
+│   └── utils/                   # Shared utilities
+├── e2e/                         # Playwright E2E tests
+├── public/                      # Static assets
+├── astro.config.mjs             # Astro configuration
+├── tailwind.config.mjs          # Tailwind configuration
+├── vitest.config.ts             # Unit test configuration
+└── playwright.config.ts         # E2E test configuration
 ```
 
-### Shared Patterns
+### Component Organization
 
-#### Layouts
+The `components/` directory is where we spend most of our time. We encourage organizing components based on what makes sense for your application. 
 
-We use consistent layout patterns across applications:
+```
+components/
+├── features/                   # Organized by business feature
+│   ├── auth/
+│   │   ├── LoginForm.svelte
+│   │   └── LoginForm.test.ts
+│   └── dashboard/
+│       ├── DashboardStats.svelte
+│       └── DashboardStats.test.ts
+├── shared/                     # Shared across features
+│   ├── Button.svelte
+│   └── Card.svelte
+└── layouts/                    # Feature-specific layouts
+    └── DashboardLayout.svelte
+```
+
+The key principles are:
+- Organize components in a way that scales with your application requirements
+- Keep related code close together (components, tests, utilities)
+- Make it easy for team members to locate and work with components
+- Allow for flexible restructuring as the application evolves
+
+### Other Directories
+
+The remaining directories serve specific purposes but typically require less frequent modifications:
+
+- `layouts/`: Base page layouts that wrap your components
+- `pages/`: Astro's file-based routing (should contain minimal logic)
+- `styles/`: Global styles and Tailwind configurations
+- `utils/`: Shared utilities and helpers
+- `e2e/`: End-to-end tests for critical user flows
+
+### Testing Configuration
+
+We use a dual testing setup with Vitest for unit tests and Playwright for E2E tests:
+
+```ts
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import { getVitestConfig } from '@sfh/testing/vitest-preset';
+
+export default defineConfig({
+  ...getVitestConfig(),
+  // Any app-specific overrides
+});
+```
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+import { getPlaywrightConfig } from '@sfh/testing/playwright-preset';
+
+export default defineConfig({
+  ...getPlaywrightConfig(),
+  // Any app-specific overrides
+});
+```
+
+We co-locate our unit tests with the components they test:
+
+```
+src/components/
+├── Button/
+│   ├── Button.svelte
+│   └── Button.test.ts
+└── Card/
+    ├── Card.svelte
+    └── Card.test.ts
+```
+
+## Integration with Other Tools
+
+### Svelte Components
+
+We use Svelte for interactive components:
+
+```astro
+---
+// src/pages/index.astro
+import InteractiveComponent from '../components/InteractiveComponent.svelte';
+---
+
+<InteractiveComponent client:load />
+```
+
+### Tailwind CSS
+
+Tailwind is configured through the Vite plugin:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [tailwindcss()]
+});
+```
+
+### Testing Setup
+
+We use a comprehensive testing setup:
+
+```json
+{
+  "devDependencies": {
+    "@astrojs/compiler": "^2.3.0",
+    "@playwright/test": "^1.42.1",
+    "@sfh/testing": "workspace:*",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/svelte": "^4.0.5",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitest/coverage-v8": "^1.3.1",
+    "jsdom": "^24.0.0",
+    "vitest": "^1.3.1"
+  }
+}
+```
+
+## Development Workflow
+
+### Starting Development Server
+
+```bash
+# Start the development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+```
+
+### Testing Commands
+
+```bash
+# Run unit tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run E2E tests with UI
+pnpm test:e2e:ui
+```
+
+## Best Practices
+
+### Performance
+
+1. **Selective Hydration**
+   - Use `client:load` only when necessary
+   - Prefer `client:visible` for below-the-fold content
+   - Keep JavaScript bundles small
+
+2. **Image Optimization**
+   ```astro
+   ---
+   import { Image } from 'astro:assets';
+   ---
+   <Image src={import('../assets/image.png')} alt="Description" />
+   ```
+
+3. **API Routes**
+   ```ts
+   // src/pages/api/data.ts
+   import type { APIRoute } from 'astro';
+
+   export const GET: APIRoute = async ({ params, request }) => {
+     return new Response(JSON.stringify({ data: 'value' }));
+   };
+   ```
+
+### Type Safety
+
+1. **Component Props**
+   ```astro
+   ---
+   interface Props {
+     title: string;
+     description?: string;
+   }
+
+   const { title, description } = Astro.props;
+   ---
+   ```
+
+2. **API Types**
+   ```ts
+   import type { APIContext } from 'astro';
+
+   export async function GET({ params }: APIContext) {
+     // Type-safe API handling
+   }
+   ```
+
+## Common Patterns
+
+### Layouts
 
 ```astro
 ---
 // src/layouts/Layout.astro
-import { ViewTransitions } from 'astro:transitions';
 import '../styles/global.css';
 
 interface Props {
@@ -76,7 +321,6 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <title>{title}</title>
-    <ViewTransitions />
   </head>
   <body>
     <slot />
@@ -84,96 +328,22 @@ const { title } = Astro.props;
 </html>
 ```
 
-#### API Routes
+### Error Handling
 
-API routes follow a standard pattern:
-
-```ts
-// src/pages/api/[resource].ts
-import type { APIRoute } from 'astro';
-
-export const GET: APIRoute = async ({ params, request }) => {
-  // Type-safe API handling
-  return new Response(JSON.stringify({ 
-    message: 'Success' 
-  }));
-};
-```
-
-### Integration with Other Tools
-
-#### TypeScript
-
-We leverage Astro's built-in TypeScript support:
-- Type-safe props using `interface Props`
-- Type-safe API routes using `APIRoute`
-- Shared types across the monorepo
-
-#### Tailwind CSS
-
-Astro integrates seamlessly with our Tailwind setup:
 ```astro
 ---
-// src/components/Button.astro
-interface Props {
-  variant?: 'primary' | 'secondary';
-}
-
-const { variant = 'primary' } = Astro.props;
+// src/pages/[...404].astro
 ---
 
-<button class:list={[
-  'px-4 py-2 rounded',
-  {
-    'bg-blue-500 text-white': variant === 'primary',
-    'bg-gray-200 text-gray-800': variant === 'secondary',
-  }
-]}>
-  <slot />
-</button>
+<div class="error-page">
+  <h1>404: Not Found</h1>
+  <p>The page you're looking for doesn't exist.</p>
+</div>
 ```
 
-### Best Practices
-
-1. **File Organization**
-   - Keep pages lightweight, move logic to components
-   - Use `.astro` for static components, `.svelte` for interactive ones
-   - Organize API routes by resource
-
-2. **Performance**
-   - Use `client:load` sparingly
-   - Leverage View Transitions API
-   - Implement proper caching strategies
-
-3. **Type Safety**
-   - Define prop interfaces for all components
-   - Use type-safe API routes
-   - Share types across the monorepo
-
-4. **Code Sharing**
-   - Use workspace packages for shared code
-   - Create reusable components in UI library
-   - Share utilities across applications
-
-### Common Gotchas
-
-1. **SSR Considerations**
-   - Be mindful of `window` usage
-   - Handle loading states appropriately
-   - Use `client:only` when necessary
-
-2. **Build Performance**
-   - Keep dependencies lean
-   - Use dynamic imports for large libraries
-   - Optimize image assets
-
-3. **Development Workflow**
-   - Use `pnpm dev --filter <app>` for development
-   - Leverage HMR effectively
-   - Monitor build sizes
-
-### Resources
+## Resources
 
 - [Astro Documentation](https://docs.astro.build)
-- [Astro + Svelte Guide](https://docs.astro.build/en/guides/integrations-guide/svelte/)
-- [Astro SSR Guide](https://docs.astro.build/en/guides/server-side-rendering/) 
+- [Astro + Svelte Integration](https://docs.astro.build/en/guides/integrations-guide/svelte/)
+- [Astro + Vercel Deployment](https://docs.astro.build/en/guides/deploy/vercel/)
+- [Astro + Tailwind CSS](https://docs.astro.build/en/guides/integrations-guide/tailwind/) 
