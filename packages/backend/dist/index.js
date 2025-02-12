@@ -32,6 +32,7 @@ var import_supabase_js2 = require("@supabase/supabase-js");
 // src/auth.ts
 var import_supabase_js = require("@supabase/supabase-js");
 var Auth = class {
+  supabaseClient;
   constructor(supabaseUrl, supabaseKey) {
     this.supabaseClient = (0, import_supabase_js.createClient)(supabaseUrl, supabaseKey);
   }
@@ -66,8 +67,7 @@ var Auth = class {
   }
   onAuthStateChange(callback) {
     return this.supabaseClient.auth.onAuthStateChange((_event, session) => {
-      var _a;
-      callback((_a = session == null ? void 0 : session.user) != null ? _a : null);
+      callback(session?.user ?? null);
     });
   }
 };
@@ -77,10 +77,9 @@ function createSvelteAuthStore(options) {
     loading: true
   });
   async function init() {
-    var _a;
     try {
       const { data: { session } } = await options.auth.client.auth.getSession();
-      store.set({ user: (_a = session == null ? void 0 : session.user) != null ? _a : null, loading: false });
+      store.set({ user: session?.user ?? null, loading: false });
       options.auth.onAuthStateChange((user) => {
         store.set({ user, loading: false });
       });

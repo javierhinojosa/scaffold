@@ -1,0 +1,54 @@
+research_task:
+  description: >
+    Conduct a thorough research about {topic}
+    Make sure you find any interesting and relevant information given
+    the current year is {current_year}.
+  expected_output: >
+    A list with 10 bullet points of the most relevant information about {topic}
+  agent: researcher
+
+reporting_task:
+  description: >
+    Review the context you got and expand each topic into a full section for a report.
+    Make sure the report is detailed and contains any and all relevant information.
+  expected_output: >
+    A fully fledged report with the main topics, each with a full section of information.
+    Formatted as markdown without '```'
+  agent: reporting_analyst
+
+sitemap_task:
+  description: >
+    Create a comprehensive repository overview:
+    1. Generate a complete file tree (up to 5 levels deep) of {root_path}
+    2. List and describe main directories and their purpose
+    3. Document key files and their roles
+    4. Keep individual descriptions under 100 words
+    5. Add timestamp at the bottom showing last update date
+    Focus on providing both broad structure via file tree and specific details about key components.
+  expected_output: >
+    A comprehensive markdown document with:
+    1. Complete file tree (up to 5 levels)
+    2. Root structure explanation
+    3. Key component descriptions
+    4. Important relationships
+    5. Last updated timestamp
+    Format the file tree with proper markdown code block formatting.
+    Keep descriptions clear and concise.
+    Total content should be under 2000 words (excluding file tree).
+  agent: sitemap_maintainer
+  output_file: docs/sitemap.md
+
+validation_task:
+  description: >
+    List critical documentation gaps:
+    1. Check apps/docs directory
+    2. List top 5 missing docs
+    3. Suggest quick fixes
+    Keep it very brief and high-level.
+  expected_output: >
+    A short report with:
+    1. Top 5 documentation gaps
+    2. Quick fix suggestions
+    Keep total length under 500 words.
+  agent: docs_validator
+  output_file: docs/validation_report.md

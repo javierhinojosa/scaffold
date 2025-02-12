@@ -1,0 +1,211 @@
+---
+title: TypeScript
+description: Learn about our monorepo TypeScript setup and configuration
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Overview
+
+Our monorepo uses a carefully structured TypeScript configuration setup that provides consistent type checking, modern features, and optimal development experience across all projects. The configuration is designed to work seamlessly with our tech stack including Astro, Svelte, and Node.js backends.
+
+## Configuration Structure
+
+We use a hierarchical TypeScript configuration approach with a base configuration that's extended by individual projects.
+
+### Base Configuration
+
+The root `tsconfig.base.json` serves as the foundation for all TypeScript configurations in the monorepo:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "allowJs": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sfh/*": ["packages/*/src"]
+    }
+  },
+  "exclude": ["**/node_modules", "**/dist", "**/build"]
+}
+```
+
+Key features:
+- Modern JavaScript features (ES2022)
+- ESM module system
+- Strict type checking enabled
+- Path aliases for package imports (`@sfh/*`)
+- Source map and declaration file generation
+- Incremental builds support
+
+### Project Configurations
+
+<Tabs>
+  <TabItem label="Admin App">
+  ```json
+  {
+    "extends": ["../../tsconfig.base.json", "astro/tsconfigs/strict"],
+    "compilerOptions": {
+      "paths": {
+        "@/*": ["src/*"],
+        "@sfh/*": ["../../packages/*/src"]
+      },
+      "types": ["vitest/globals", "@testing-library/jest-dom"]
+    }
+  }
+  ```
+
+  The admin app configuration integrates with Astro and includes testing type definitions.
+  </TabItem>
+
+  <TabItem label="Backend">
+  ```json
+  {
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+      "outDir": "./dist",
+      "moduleResolution": "node",
+      "noEmit": false
+    }
+  }
+  ```
+
+  The backend configuration is optimized for Node.js development with output generation enabled.
+  </TabItem>
+
+  <TabItem label="Documentation">
+  ```json
+  {
+    "extends": ["../../tsconfig.base.json", "astro/tsconfigs/strict"],
+    "compilerOptions": {
+      "paths": {
+        "@/*": ["src/*"],
+        "@sfh/*": ["../../packages/*/src"]
+      }
+    }
+  }
+  ```
+
+  The documentation site uses a similar setup to the admin app with Astro integration.
+  </TabItem>
+</Tabs>
+
+## Path Aliases
+
+We use a consistent path alias system across all projects to make imports cleaner and more maintainable.
+
+### Available Aliases
+
+| Alias | Purpose | Example |
+|-------|---------|---------|
+| `@/*` | Project-local imports | `import { Button } from '@/components/Button'` |
+| `@sfh/*` | Cross-package imports | `import { utils } from '@sfh/shared/utils'` |
+
+### Example Usage
+
+```typescript
+// ❌ Without aliases (avoid)
+import { something } from '../../../packages/shared/src/utils';
+import { Button } from '../../../../components/Button';
+
+// ✅ With aliases (preferred)
+import { something } from '@sfh/shared/utils';
+import { Button } from '@/components/Button';
+```
+
+## Best Practices
+
+### Configuration Guidelines
+
+1. **Extend Base Config**
+   - Always extend from `tsconfig.base.json`
+   - Add project-specific settings only when necessary
+
+2. **Path Aliases**
+   - Use `@/*` for project-local imports
+   - Use `@sfh/*` for cross-package imports
+   - Avoid deep relative imports
+
+3. **Type Safety**
+   - Keep strict mode enabled
+   - Add explicit types for better maintainability
+   - Use type inference when it improves readability
+
+### Code Organization
+
+1. **Type Definitions**
+   - Place shared types in appropriate `@types` directories
+   - Co-locate component types with their implementations
+   - Use barrel files for type exports
+
+2. **Project Structure**
+   ```
+   src/
+   ├── @types/        # Global type definitions
+   ├── components/    # UI components with co-located types
+   ├── lib/          # Shared utilities and types
+   └── models/       # Domain models and interfaces
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Path Aliases Not Working**
+   ```bash
+   # Verify TypeScript is using the correct config
+   npx tsc --showConfig
+
+   # Restart TypeScript server in VS Code
+   Cmd/Ctrl + Shift + P > TypeScript: Restart TS Server
+   ```
+
+2. **Type Errors After Updates**
+   ```bash
+   # Update dependencies and rebuild
+   pnpm install
+   pnpm run build
+
+   # Clear TypeScript cache
+   find . -name "*.tsbuildinfo" -delete
+   ```
+
+### IDE Setup
+
+For optimal TypeScript support in VS Code:
+
+1. Install recommended extensions:
+   - TypeScript and JavaScript Language Features
+   - Svelte for VS Code
+   - Astro
+
+2. Configure workspace settings:
+   ```json
+   {
+     "typescript.tsdk": "node_modules/typescript/lib",
+     "typescript.enablePromptUseWorkspaceTsdk": true
+   }
+   ```
+
+## Resources
+
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [TypeScript with Astro](https://docs.astro.build/en/guides/typescript/)
+- [Svelte TypeScript Support](https://svelte.dev/docs/typescript)
+- [tsconfig Reference](https://www.typescriptlang.org/tsconfig) 

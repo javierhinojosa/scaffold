@@ -1,0 +1,87 @@
+---
+title: CrewAI Implementation
+description: Learn about our CrewAI implementation and how to set it up locally
+---
+
+# CrewAI Implementation
+
+CrewAI is a powerful framework for orchestrating role-playing AI agents. In our implementation, we use CrewAI to create autonomous agents that can work together to accomplish complex tasks.
+
+## Local Development Setup
+
+To run the CrewAI implementation locally, you'll need to set up a Python virtual environment. This ensures that all dependencies are properly isolated and managed.
+
+### Prerequisites
+
+- Python 3.10 or higher
+- pip (Python package installer)
+
+### Setting up the Virtual Environment
+
+1. First, navigate to the project directory:
+
+```bash
+cd your-project-directory
+```
+
+2. Create a new virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+3. Activate the virtual environment:
+
+On macOS/Linux:
+```bash
+source .venv/bin/activate
+```
+
+On Windows:
+```bash
+.venv\Scripts\activate
+```
+
+4. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Important Notes
+
+- Always ensure your virtual environment (`.venv`) is activated when working with CrewAI
+- The `.venv` directory is included in `.gitignore` to prevent committing environment-specific files
+- If you add new dependencies, remember to update `requirements.txt`:
+  ```bash
+  pip freeze > requirements.txt
+  ```
+
+## Configuration
+
+Make sure you have the necessary environment variables set up in your `.env` file:
+
+```env
+OPENAI_API_KEY=your_api_key_here
+# Add any other required environment variables
+```
+
+## Running CrewAI
+
+Once your virtual environment is set up and activated, you can run the CrewAI implementation using the provided scripts. Make sure to check the specific documentation for each agent and task implementation in your codebase.
+
+## Best Practices
+
+1. Always activate the virtual environment before running CrewAI-related code
+2. Keep your dependencies up to date
+3. Document any changes to the agent implementations
+4. Test your changes thoroughly before committing
+
+## Troubleshooting
+
+If you encounter any issues:
+
+1. Ensure your virtual environment is activated
+2. Verify all required dependencies are installed
+3. Check that your `.env` file contains all necessary environment variables
+4. Make sure you're using a compatible Python version 

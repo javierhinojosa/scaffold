@@ -35,6 +35,7 @@ export default defineConfig({
                       { label: 'Svelte', link: '/dev/stack/svelte/' },
                       { label: 'Supabase', link: '/dev/stack/supabase/' },
                       { label: 'Authentication', link: '/dev/stack/authentication/' },
+                      { label: 'TypeScript', link: '/dev/stack/typescript/' },
                       { label: 'Tailwind + DaisyUI', link: '/dev/stack/styling/' },
                       { label: 'Testing', link: '/dev/stack/testing/' },
                       { label: 'Turborepo', link: '/dev/stack/turborepo/' },
