@@ -1,9 +1,10 @@
 {
-  "extends": "astro/tsconfigs/strict",
+  "extends": ["../../tsconfig.base.json", "astro/tsconfigs/strict"],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@sfh/*": ["../../packages/*/src"]
     },
     "types": ["vitest/globals", "@testing-library/jest-dom"],
     "allowImportingTsExtensions": true,

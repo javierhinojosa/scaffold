@@ -57,6 +57,7 @@ next-env.d.ts
 .favorites.json
 *storybook.log
 mise.toml
+.turbo/
 
 # Storage
 storage/privkeys/*
