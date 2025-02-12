@@ -1,6 +1,7 @@
 {
   "name": "sfh",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -26,6 +27,9 @@
   "dependencies": {
     "@playwright/test": "^1.50.1",
     "@vitest/ui": "^3.0.5",
+    "gray-matter": "^4.0.3",
+    "remark": "^15.0.1",
+    "strip-markdown": "^6.0.0",
     "vitest": "^3.0.5"
   }
 }
