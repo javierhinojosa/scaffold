@@ -1,10 +1,18 @@
 # SFH Repository Overview
 
-Last updated: 2023-06-27 14:30:00
+This repository contains the full stack application suite for SFH, including web applications, documentation, and shared packages.
+
+## Repository Structure
 
 ```
 .
 ├── .npmrc
+├── .turbo
+│   ├── cache
+│   ├── cookies
+│   │   └── 1.cookie
+│   └── daemon
+│       └── 605000514d22dff7-turbo.log.2025-02-13
 ├── README.md
 ├── apps
 │   ├── admin
@@ -47,7 +55,7 @@ Last updated: 2023-06-27 14:30:00
 │   │   │   │   └── supabase.ts
 │   │   │   ├── pages
 │   │   │   │   ├── [...404].astro
-│   │   │   │   ├── dashboard.astro 
+│   │   │   │   ├── dashboard.astro
 │   │   │   │   ├── index.astro
 │   │   │   │   └── login.astro
 │   │   │   └── styles
@@ -66,6 +74,7 @@ Last updated: 2023-06-27 14:30:00
 │   │       │   └── user_preference.txt
 │   │       ├── pyproject.toml
 │   │       ├── report.md
+│   │       ├── requirements.txt
 │   │       ├── src
 │   │       │   └── development
 │   │       │       ├── __init__.py
@@ -137,39 +146,66 @@ Last updated: 2023-06-27 14:30:00
 └── turbo.json
 ```
 
-## Root Structure
+## Top-Level Structure
 
-- `apps/`: Contains the main application code
-- `packages/`: Shared code and libraries used across apps
-- `scripts/`: Utility and automation scripts
+- `.npmrc`, `.turbo/`: Configuration for npm and Turbo monorepo tools 
+- `README.md`: Overview documentation for the repository
+- `apps/`: Contains the main applications of the project
+- `packages/`: Shared packages used across applications
+- `scripts/`: Utility and development scripts
+- `pnpm-workspace.yaml`, `package.json`, `turbo.json`: Monorepo configuration 
+- `tsconfig.base.json`: Base TypeScript configuration extended by apps/packages
 
-## Key Components
+## Applications (`apps/`)
 
-### apps/admin
+### `admin/`
 
-The admin application, built with Astro. Includes end-to-end tests with Playwright, Svelte components, auth and data fetching logic, and static pages.
+An Astro admin dashboard application. Key components:
 
-### apps/crewai
+- `src/`: Main source code including pages, components, styles
+- `src/lib/`: Utility modules and Supabase client configuration
+- `astro.config.mjs`: Astro configuration
+- `tailwind.config.mjs`: Tailwind CSS configuration
 
-An AI-related module with configuration, documented API, and validation utilities. Uses Python.
+### `crewai/development/`
 
-### apps/docs 
+Development files for automated repository documentation with crewAI. Key components:
 
-Project documentation site, also built with Astro. Content is authored in MDX.
+- `src/development/`: CrewAI agent and execution logic
+- `src/development/config/`: Configuration for agents and tasks
+- `docs/`: Generated sitemap and validation reports
+- `README.md`: Overview and setup instructions for crewAI development
 
-### packages/backend
+### `docs/`
 
-Shared backend package providing a type-safe Supabase client. Types are generated from the Supabase schema. Includes auth handling, tests, and database migrations.
+An Astro documentation site. Key components:
 
-### packages/testing  
+- `src/content/docs/`: Markdown documentation files
+- `src/content.config.ts`: Configuration for loading docs content
+- `astro.config.mjs`: Astro configuration
 
-Common testing utilities and configuration for use across the monorepo.
+## Packages (`packages/`)
+
+### `backend/`
+
+Shared backend services and APIs. Key components:
+
+- `src/`: Main source code
+- `supabase/`: Supabase configuration and migrations
+- `vitest.config.ts`: Vitest unit testing configuration
+
+### `testing/`
+
+Common testing utilities and configuration. Key components:
+
+- `src/`: Main source code
+- `vitest-preset.ts`: Vitest configuration preset
 
 ## Important Relationships
 
-- All apps share code from the `packages/` directory
-- `packages/backend` provides Supabase client for data access
-- `packages/testing` sets up consistent testing across apps
-- Turborepo is used to manage the monorepo and its workspaces
+- Apps import and use shared packages (`packages/`) for backend services and testing
+- `backend/` package provides APIs and Supabase integration used by apps
+- `testing/` package provides common test configuration and utilities for all apps and packages
+- Monorepo scripts (`scripts/`) automate common tasks across apps and packages
 
-Let me know if you have any other questions!
+Last updated: 2023-06-19 10:30:00

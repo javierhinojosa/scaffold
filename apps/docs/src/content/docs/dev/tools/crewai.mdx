@@ -1,0 +1,167 @@
+---
+title: CrewAI Integration
+description: Learn about how CrewAI is implemented and used in our monorepo for AI agent orchestration
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Overview
+
+CrewAI is integrated into our monorepo to orchestrate role-playing AI agents that work together to accomplish complex tasks. Our implementation includes custom agents, tasks, and tools that help automate various development processes.
+
+## Architecture
+
+The CrewAI implementation is located in the `apps/crewai/development` directory and follows a structured approach:
+
+```
+apps/crewai/development/
+├── src/
+│   └── development/
+│       ├── config/
+│       │   ├── agents.yaml    # Agent definitions
+│       │   └── tasks.yaml     # Task definitions
+│       ├── crew.py           # Main crew implementation
+│       └── main.py          # Entry point
+├── docs/                    # Generated documentation
+└── knowledge/              # Knowledge base for agents
+```
+
+## Key Components
+
+### 1. Agents
+
+Agents are defined in `agents.yaml` and are instantiated with specific roles, goals, and tools. Our implementation includes:
+
+- Documentation maintainers
+- Validation agents
+- Task-specific specialists
+
+### 2. Tasks
+
+Tasks are configured in `tasks.yaml` and represent the work units that agents need to complete. Each task includes:
+
+- Description
+- Expected output
+- Assigned agent
+- Output file (if applicable)
+
+### 3. Tracing and Monitoring
+
+Our CrewAI implementation is integrated with Langfuse for comprehensive tracing and monitoring:
+
+```python
+# Initialize Langfuse
+langfuse = Langfuse(
+    public_key="[configured-key]",
+    secret_key="[configured-key]",
+    host="https://us.cloud.langfuse.com"
+)
+```
+
+Each agent action and task execution is traced for monitoring and debugging purposes.
+
+## Local Development
+
+### Prerequisites
+
+- Python 3.10 or higher
+- Virtual environment management
+
+### Setup
+
+1. Create and activate a virtual environment:
+
+<Tabs>
+  <TabItem label="macOS/Linux">
+  ```bash
+  python -m venv .venv
+  source .venv/bin/activate
+  ```
+  </TabItem>
+  <TabItem label="Windows">
+  ```bash
+  python -m venv .venv
+  .venv\Scripts\activate
+  ```
+  </TabItem>
+</Tabs>
+
+2. Install dependencies:
+```bash
+pip install -r apps/crewai/development/requirements.txt
+```
+
+3. Configure environment variables:
+```bash
+cp apps/crewai/development/.env.example apps/crewai/development/.env
+```
+
+### Running CrewAI
+
+To execute the CrewAI system:
+
+1. Navigate to the development directory:
+```bash
+cd apps/crewai/development
+```
+
+2. Run the main script:
+```bash
+python src/main.py
+```
+
+## Custom Tools
+
+Our CrewAI implementation includes several custom tools:
+
+1. **Directory Operations**
+   - List directory contents
+   - Generate file trees
+   - Read file contents
+
+2. **Documentation Tools**
+   - Sitemap generation
+   - Documentation validation
+   - Knowledge base integration
+
+## Best Practices
+
+1. **Configuration Management**
+   - Keep agent and task configurations in YAML files
+   - Use environment variables for sensitive data
+   - Version control configuration changes
+
+2. **Error Handling**
+   - Implement comprehensive error tracking
+   - Use Langfuse traces for debugging
+   - Handle edge cases gracefully
+
+3. **Testing**
+   - Test agent behaviors independently
+   - Validate task outputs
+   - Monitor performance metrics
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Environment Setup**
+   - Ensure Python version compatibility
+   - Verify all dependencies are installed
+   - Check environment variables
+
+2. **Execution Issues**
+   - Review Langfuse traces for errors
+   - Check agent configurations
+   - Validate task definitions
+
+3. **Performance**
+   - Monitor execution times
+   - Optimize tool usage
+   - Review resource consumption
+
+## Resources
+
+- [CrewAI Documentation](https://docs.crewai.com)
+- [Langfuse Integration Guide](/dev/tools/langfuse)
+- [Configuration Reference](/reference/crewai-config) 

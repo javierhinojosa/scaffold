@@ -73,3 +73,37 @@ __pycache__/
 # Supabase
 .branches
 .temp
+
+# Admin App
+apps/admin/dist/
+apps/admin/.astro
+apps/admin/node_modules/
+apps/admin/npm-debug.log*
+apps/admin/pnpm-debug.log*
+apps/admin/.env
+apps/admin/.env.production
+apps/admin/.DS_Store
+apps/admin/.idea/
+
+# Docs App
+apps/docs/dist/
+apps/docs/.astro
+apps/docs/node_modules/
+apps/docs/npm-debug.log*
+apps/docs/pnpm-debug.log*
+apps/docs/.env
+apps/docs/.env.production
+apps/docs/.DS_Store
+apps/docs/.idea/
+
+# CrewAI
+apps/crewai/development/.env
+apps/crewai/development/.DS_Store
+apps/crewai/development/__pycache__/
+
+# Backend
+packages/backend/dist/
+
+# Testing
+packages/testing/dist/
+packages/testing/.turbo/

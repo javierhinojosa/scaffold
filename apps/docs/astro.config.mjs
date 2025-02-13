@@ -27,43 +27,64 @@ export default defineConfig({
                       { label: 'Introduction', link: '/' },
                       { label: 'Setup Guide', link: '/dev/getting-started/' },
                     ],
-                  },
-                  {
+                },
+                {
                     label: 'Stack',
                     items: [
-                      { label: 'Astro', link: '/dev/stack/astro/' },
-                      { label: 'Svelte', link: '/dev/stack/svelte/' },
-                      { label: 'Supabase', link: '/dev/stack/supabase/' },
-                      { label: 'Authentication', link: '/dev/stack/authentication/' },
-                      { label: 'TypeScript', link: '/dev/stack/typescript/' },
-                      { label: 'Tailwind + DaisyUI', link: '/dev/stack/styling/' },
-                      { label: 'Testing', link: '/dev/stack/testing/' },
-                      { label: 'Turborepo', link: '/dev/stack/turborepo/' },
-                      { label: 'Deployment', link: '/dev/stack/deployment/' },
-                    ],
-                  },
-                  {
+                      {
+                        label: 'Frontend',
+                        items: [
+                          { label: 'Astro', link: '/dev/stack/astro/' },
+                          { label: 'Svelte', link: '/dev/stack/svelte/' },
+                          { label: 'Tailwind + DaisyUI', link: '/dev/stack/styling/' },
+                        ]
+                      },
+                      {
+                        label: 'Backend',
+                        items: [
+                          { label: 'Supabase', link: '/dev/stack/supabase/' },
+                          { label: 'Authentication', link: '/dev/stack/authentication/' },
+                        ]
+                      },
+                      {
+                        label: 'AI & Monitoring',
+                        items: [
+                          { label: 'CrewAI', link: '/dev/tools/crewai/' },
+                          { label: 'Langfuse', link: '/dev/tools/langfuse/' },
+                        ]
+                      },
+                      {
+                        label: 'Development Tools',
+                        items: [
+                          { label: 'TypeScript', link: '/dev/stack/typescript/' },
+                          { label: 'Testing', link: '/dev/stack/testing/' },
+                          { label: 'Turborepo', link: '/dev/stack/turborepo/' },
+                          { label: 'Deployment', link: '/dev/stack/deployment/' },
+                        ]
+                      }
+                    ]
+                },
+                {
                     label: 'Applications',
                     items: [
                       { label: 'Admin Dashboard', link: '/dev/apps/admin/' },
                       { label: 'Documentation Site', link: '/dev/apps/docs/' },
-                      { label: 'Dify', link: '/dev/apps/dify/' },
                     ],
-                  },
-                  {
+                },
+                {
                     label: 'Packages',
                     items: [
                       { label: 'Testing Utilities', link: '/dev/packages/testing/' },
                     ],
-                  },
-                  {
+                },
+                {
                     label: 'Development',
                     items: [
                       { label: 'Code Style', link: '/dev/development/code-style/' },
                       { label: 'Testing', link: '/dev/development/testing/' },
                       { label: 'Deployment', link: '/dev/development/deployment/' },
                     ],
-                  },
+                },
             ],
           },
           {

@@ -1,0 +1,174 @@
+---
+title: Langfuse Integration
+description: Learn about how Langfuse is used for tracing and monitoring AI operations in our monorepo
+---
+
+## Overview
+
+Langfuse is integrated into our monorepo as a comprehensive observability solution for AI operations. It provides tracing, monitoring, and debugging capabilities for our AI systems, particularly focusing on our CrewAI implementation.
+
+## Integration Points
+
+### 1. CrewAI Integration
+
+The primary integration of Langfuse is with our CrewAI system, where it traces:
+
+- Agent actions and decisions
+- Task executions
+- Tool usage
+- Error handling
+
+```python
+# Core Langfuse initialization
+langfuse = Langfuse(
+    public_key="[configured-key]",
+    secret_key="[configured-key]",
+    host="https://us.cloud.langfuse.com"
+)
+
+# Session tracking
+crew_sessions = {}
+```
+
+### 2. Function Tracing
+
+We use a custom decorator to trace function executions:
+
+```python
+@trace_function
+def some_function(*args, **kwargs):
+    # Function implementation
+    pass
+```
+
+The decorator automatically:
+- Creates a span for the function
+- Captures input parameters
+- Records output or errors
+- Manages span lifecycle
+
+## Key Features
+
+### 1. Trace Management
+
+- **Session Tracking**: Each CrewAI execution gets a unique session ID
+- **Hierarchical Tracing**: Actions are organized in a parent-child relationship
+- **Error Tracking**: Automatic capture of exceptions and error states
+
+### 2. Monitoring
+
+- **Performance Metrics**: Track execution times and resource usage
+- **Success Rates**: Monitor task completion and error rates
+- **Cost Tracking**: Track API usage and associated costs
+
+### 3. Debugging Tools
+
+- **Detailed Logs**: Access to complete execution logs
+- **Error Analysis**: Comprehensive error tracking and analysis
+- **Performance Insights**: Identify bottlenecks and optimization opportunities
+
+## Configuration
+
+### Environment Setup
+
+1. Set up environment variables:
+```bash
+LANGFUSE_PUBLIC_KEY=your_public_key
+LANGFUSE_SECRET_KEY=your_secret_key
+LANGFUSE_HOST=https://us.cloud.langfuse.com
+```
+
+### Trace Configuration
+
+Configure trace details in your implementation:
+
+```python
+# Create a new trace
+trace = langfuse.trace(
+    name="operation_name",
+    id=session_id,
+    metadata={
+        "timestamp": datetime.now().isoformat(),
+        "type": "operation_type"
+    }
+)
+
+# Create a span within a trace
+span = langfuse.span(
+    name="span_name",
+    parent_id=parent_trace_id
+)
+```
+
+## Best Practices
+
+### 1. Tracing Strategy
+
+- Create meaningful trace hierarchies
+- Use consistent naming conventions
+- Include relevant metadata
+- Clean up resources properly
+
+### 2. Error Handling
+
+```python
+try:
+    # Operation code
+    span.update(output=result)
+except Exception as e:
+    span.update(error=str(e))
+    raise
+finally:
+    span.end()
+```
+
+### 3. Resource Management
+
+- End spans and traces properly
+- Clean up session IDs
+- Handle nested operations correctly
+
+## Monitoring Dashboard
+
+### Key Metrics
+
+1. **Performance Metrics**
+   - Response times
+   - Success rates
+   - Error frequencies
+
+2. **Cost Metrics**
+   - API usage
+   - Token consumption
+   - Resource utilization
+
+3. **Quality Metrics**
+   - Task completion rates
+   - Error patterns
+   - User feedback
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Missing Traces**
+   - Verify environment variables
+   - Check trace initialization
+   - Ensure proper span closure
+
+2. **Incomplete Data**
+   - Validate metadata inclusion
+   - Check error handling
+   - Verify span updates
+
+3. **Performance Issues**
+   - Monitor trace overhead
+   - Optimize span creation
+   - Review data volume
+
+## Resources
+
+- [Langfuse Documentation](https://langfuse.com/docs)
+- [API Reference](https://langfuse.com/docs/api)
+- [CrewAI Integration Guide](/dev/tools/crewai)
+- [Monitoring Best Practices](/reference/monitoring) 

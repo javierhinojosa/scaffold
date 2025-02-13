@@ -1,6 +1,6 @@
 # Development Crew
 
-Welcome to the Development Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+Welcome to the Development Crew project, powered by [crewAI](https://crewai.com). This specialized crew is designed to maintain and improve repository documentation through automated analysis and generation of documentation artifacts.
 
 ## Installation
 
@@ -18,36 +18,78 @@ Next, navigate to your project directory and install the dependencies:
 ```bash
 crewai install
 ```
-### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+## Crew Structure
 
-- Modify `src/development/config/agents.yaml` to define your agents
-- Modify `src/development/config/tasks.yaml` to define your tasks
-- Modify `src/development/crew.py` to add your own logic, tools and specific args
-- Modify `src/development/main.py` to add custom inputs for your agents and tasks
+### Agents
+
+The Development Crew consists of two specialized agents:
+
+1. **Repository Structure Documentation Specialist**
+   - Role: Creates comprehensive repository structure overviews
+   - Tools: 
+     - Generate file tree (up to 5 levels deep)
+     - List directory contents
+     - Read file contents
+   - Focus: High-level organization and component relationships
+
+2. **Documentation Quality Analyst**
+   - Role: Identifies documentation gaps and suggests improvements
+   - Tools:
+     - List directory contents
+     - Read file contents
+     - Generate file tree
+   - Focus: Critical documentation gaps and actionable improvements
+
+### Tasks
+
+The crew performs two main tasks:
+
+1. **Sitemap Generation**
+   - Creates a comprehensive repository overview
+   - Outputs: `docs/sitemap.md`
+   - Deliverables:
+     - Complete file tree (up to 5 levels)
+     - Root structure explanation
+     - Key component descriptions
+     - Important relationships
+     - Last updated timestamp
+
+2. **Documentation Validation**
+   - Analyzes documentation coverage and gaps
+   - Outputs: `docs/validation_report.md`
+   - Deliverables:
+     - List of critical documentation gaps (max 5)
+     - Quick fix suggestions
+     - Priority levels for each gap
+     - Focused on major gaps affecting project understanding
 
 ## Running the Project
 
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+To execute the documentation maintenance crew:
 
 ```bash
 $ crewai run
 ```
 
-This command initializes the development Crew, assembling the agents and assigning them tasks as defined in your configuration.
+This will:
+1. Generate a comprehensive sitemap of your repository
+2. Analyze existing documentation and identify gaps
+3. Create two output files in the `docs/` directory
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+## Configuration
 
-## Understanding Your Crew
+The crew's behavior can be customized through:
 
-The development Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+- `src/development/config/agents.yaml`: Define agent roles and capabilities
+- `src/development/config/tasks.yaml`: Configure documentation tasks and outputs
+- `src/development/crew.py`: Customize tools and execution logic
 
 ## Support
 
-For support, questions, or feedback regarding the Development Crew or crewAI.
+For support, questions, or feedback:
 - Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
+- Reach out through our [GitHub repository](https://github.com/joaomdmoura/crewai)
 - [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
 - [Chat with our docs](https://chatg.pt/DWjSBZn)
 
