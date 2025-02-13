@@ -3,4 +3,9 @@ langchain>=0.1.0
 agentops==0.2.1
 pydantic>=2.0.0
 python-dotenv>=1.0.0
-PyYAML>=6.0.1 
+PyYAML>=6.0.1
+PyGithub>=2.1.1
+beautifulsoup4>=4.12.2
+requests>=2.31.0
+markdown-it-py>=3.0.0
+pathspec>=0.12.1 
