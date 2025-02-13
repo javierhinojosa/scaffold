@@ -1,0 +1,85 @@
+---
+title: Temporal
+description: Learn how to set up and use Temporal for workflow orchestration in the SFH project
+---
+
+## Overview
+
+[Temporal](https://temporal.io/) is a workflow orchestration platform that helps you build reliable distributed applications. This guide will walk you through setting up Temporal locally and integrating it with our TypeScript codebase.
+
+## Prerequisites
+
+Before working with Temporal, ensure you have:
+- [Homebrew](https://brew.sh/) installed on your macOS system
+- Node.js and pnpm (as per our [getting started guide](/dev/getting-started))
+
+## Installation
+
+1. Install the Temporal CLI using Homebrew:
+   ```bash
+   brew install temporal
+   ```
+
+2. Start the Temporal server:
+   ```bash
+   temporal server start-dev
+   ```
+
+   This command starts a local Temporal server with default configurations. The Web UI will be available at [http://localhost:8233](http://localhost:8233).
+
+## TypeScript SDK Setup
+
+We use the Temporal TypeScript SDK in our monorepo. The SDK is already configured in our project, but here's what you need to know:
+
+1. The SDK dependencies are:
+   ```json
+   {
+     "@temporalio/client": "^1.8.0",
+     "@temporalio/worker": "^1.8.0",
+     "@temporalio/workflow": "^1.8.0"
+   }
+   ```
+
+2. Our Temporal client configuration is centralized and can be imported from our shared utilities.
+
+## Local Development
+
+When developing locally:
+
+1. Always ensure the Temporal server is running:
+   ```bash
+   temporal server start-dev
+   ```
+
+2. Start your application's Temporal worker in a separate terminal:
+   ```bash
+   pnpm dev:worker
+   ```
+
+3. You can monitor your workflows through the Temporal Web UI at [http://localhost:8233](http://localhost:8233)
+
+## Best Practices
+
+- Keep workflow code deterministic
+- Handle errors appropriately using Temporal's retry policies
+- Use signals for external events that can affect workflow execution
+- Implement proper logging and monitoring
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. If the Temporal server fails to start:
+   - Check if the ports (7233 for gRPC, 8233 for Web UI) are available
+   - Ensure no other Temporal instance is running
+
+2. If workflow execution fails:
+   - Check the Web UI for detailed error messages
+   - Verify your workflow code is deterministic
+   - Ensure your worker is running and connected to the server
+
+## Additional Resources
+
+- [Temporal Documentation](https://docs.temporal.io/)
+- [TypeScript SDK Reference](https://typescript.temporal.io/)
+- [Temporal Patterns](https://docs.temporal.io/dev-guide/typescript/patterns) 

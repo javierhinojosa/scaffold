@@ -9,6 +9,9 @@ export default defineConfig({
   devToolbar: {
     enabled: false
   },
+  server: {
+    port: 4322
+  },
   output: 'server',
   integrations: [svelte()],
 

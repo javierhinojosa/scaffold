@@ -14,6 +14,9 @@ export default defineConfig({
   devToolbar: {
     enabled: false
   },
+  server: {
+    port: 4321
+  },
 
   vite: {
     plugins: [tailwindcss()],
@@ -21,6 +24,8 @@ export default defineConfig({
       'import.meta.env.GITHUB_REPO': JSON.stringify(process.env.GITHUB_REPO),
       'import.meta.env.GITHUB_BRANCH': JSON.stringify(process.env.GITHUB_BRANCH),
       'import.meta.env.GITHUB_TOKEN': JSON.stringify(process.env.GITHUB_TOKEN),
+      'import.meta.env.PUBLIC_ADMIN_URL': JSON.stringify(process.env.PUBLIC_ADMIN_URL),
+      'import.meta.env.PUBLIC_WEBSITE_URL': JSON.stringify(process.env.PUBLIC_WEBSITE_URL),
     },
   },
 
@@ -34,6 +39,7 @@ export default defineConfig({
       components: {
         TwoColumnContent: './src/components/TwoColumnContent.astro',
         MarkdownContent: './src/components/MarkdownContent.astro',
+        Header: './src/components/Header.astro',
       },
       social: {
         github: 'https://github.com/javierhinojosa/scaffold',
