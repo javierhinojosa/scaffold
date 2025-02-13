@@ -5,13 +5,14 @@ description: Learn how to set up and use Temporal for workflow orchestration in 
 
 ## Overview
 
-[Temporal](https://temporal.io/) is a workflow orchestration platform that helps you build reliable distributed applications. This guide will walk you through setting up Temporal locally and integrating it with our TypeScript codebase.
+[Temporal](https://temporal.io/) is a workflow orchestration platform that helps you build reliable distributed applications. In our project, we use Temporal through a Flask-based server located in `apps/temporal` that manages our workflows and provides REST endpoints for workflow management.
 
 ## Prerequisites
 
 Before working with Temporal, ensure you have:
 - [Homebrew](https://brew.sh/) installed on your macOS system
 - Node.js and pnpm (as per our [getting started guide](/dev/getting-started))
+- Python 3.x installed for our Flask-based Temporal server
 
 ## Installation
 
@@ -20,43 +21,111 @@ Before working with Temporal, ensure you have:
    brew install temporal
    ```
 
-2. Start the Temporal server:
+2. Set up the Python environment for our Flask-based Temporal server:
    ```bash
-   temporal server start-dev
+   cd apps/temporal
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
    ```
 
-   This command starts a local Temporal server with default configurations. The Web UI will be available at [http://localhost:8233](http://localhost:8233).
-
-## TypeScript SDK Setup
-
-We use the Temporal TypeScript SDK in our monorepo. The SDK is already configured in our project, but here's what you need to know:
-
-1. The SDK dependencies are:
-   ```json
-   {
-     "@temporalio/client": "^1.8.0",
-     "@temporalio/worker": "^1.8.0",
-     "@temporalio/workflow": "^1.8.0"
-   }
+   Our Flask server uses the following key dependencies:
+   ```
+   flask==3.0.2
+   temporalio==1.9.0
+   python-dotenv==1.0.1
+   gunicorn==21.2.0
    ```
 
-2. Our Temporal client configuration is centralized and can be imported from our shared utilities.
+## Architecture
+
+Our Temporal integration consists of three main components:
+
+1. **Temporal Server**: The core Temporal service that manages workflow state and orchestration
+2. **Flask Server**: A REST API that provides endpoints for workflow management
+3. **Temporal Worker**: A Python process that executes the actual workflow activities
+
+### Flask Server (`app.py`)
+
+The Flask server provides the following REST endpoints:
+
+- `GET /health` - Health check endpoint
+- `GET /workflows` - List all workflows
+- `GET /workflow/<workflow_id>` - Get workflow status
+- `POST /workflow` - Start a new workflow
+
+### Workflows (`workflows.py`)
+
+We define our workflows and activities in `workflows.py`. Currently, we have a sample greeting workflow:
+
+```python
+@activity.defn
+async def say_hello(name: str) -> str:
+    return f"Hello, {name}!"
+
+@workflow.defn
+class GreetingWorkflow:
+    @workflow.run
+    async def run(self, name: str) -> str:
+        return await workflow.execute_activity(
+            say_hello,
+            name,
+            start_to_close_timeout=timedelta(seconds=5)
+        )
+```
+
+### Worker (`worker.py`)
+
+The worker process connects to the Temporal server and executes workflow activities. It runs separately from the Flask server and handles the actual workflow execution.
 
 ## Local Development
 
-When developing locally:
+When developing locally, you need to run three components in separate terminals:
 
-1. Always ensure the Temporal server is running:
+1. Start the Temporal server:
    ```bash
    temporal server start-dev
    ```
 
-2. Start your application's Temporal worker in a separate terminal:
+   This starts a local Temporal server with default configurations. The Web UI will be available at [http://localhost:8233](http://localhost:8233).
+
+2. Start the Flask server:
    ```bash
-   pnpm dev:worker
+   cd apps/temporal
+   source venv/bin/activate
+   python app.py
    ```
 
-3. You can monitor your workflows through the Temporal Web UI at [http://localhost:8233](http://localhost:8233)
+   The Flask server will run at [http://localhost:5000](http://localhost:5000).
+
+3. Start the Temporal worker:
+   ```bash
+   cd apps/temporal
+   source venv/bin/activate
+   python worker.py
+   ```
+
+## Using the API
+
+### Start a New Workflow
+
+```bash
+curl -X POST http://localhost:5000/workflow \
+  -H "Content-Type: application/json" \
+  -d '{"name": "World"}'
+```
+
+### Check Workflow Status
+
+```bash
+curl http://localhost:5000/workflow/your-workflow-id
+```
+
+### List All Workflows
+
+```bash
+curl http://localhost:5000/workflows
+```
 
 ## Best Practices
 
@@ -64,6 +133,8 @@ When developing locally:
 - Handle errors appropriately using Temporal's retry policies
 - Use signals for external events that can affect workflow execution
 - Implement proper logging and monitoring
+- Always activate the Python virtual environment when working with the Flask server
+- Keep the `requirements.txt` up to date when adding new Python dependencies
 
 ## Troubleshooting
 
@@ -78,8 +149,14 @@ Common issues and solutions:
    - Verify your workflow code is deterministic
    - Ensure your worker is running and connected to the server
 
+3. If the Flask server fails to start:
+   - Verify the virtual environment is activated
+   - Check if all dependencies are installed correctly
+   - Look for error messages in the Flask server logs
+
 ## Additional Resources
 
 - [Temporal Documentation](https://docs.temporal.io/)
 - [TypeScript SDK Reference](https://typescript.temporal.io/)
-- [Temporal Patterns](https://docs.temporal.io/dev-guide/typescript/patterns) 
+- [Temporal Patterns](https://docs.temporal.io/dev-guide/typescript/patterns)
+- [Flask Documentation](https://flask.palletsprojects.com/) 
