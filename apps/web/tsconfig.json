@@ -1,0 +1,14 @@
+{
+  "extends": ["../../tsconfig.base.json", "astro/tsconfigs/strict"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@sfh/*": ["../../packages/*/src"]
+    },
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler"
+  },
+  "include": ["src", "e2e"]
+}

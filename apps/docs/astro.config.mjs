@@ -4,16 +4,39 @@ import starlight from '@astrojs/starlight';
 import starlightSidebarTopicsDropdown from 'starlight-sidebar-topics-dropdown'
 import vercel from '@astrojs/vercel';
 import starlightLinksValidator from 'starlight-links-validator'
+import starlightGiscus from 'starlight-giscus'
+import rehypeMermaid from "rehype-mermaid";
+
+import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  devToolbar: {
+    enabled: false
+  },
+
   integrations: [
     starlight({
-      title: 'SFH Documentation',
-      social: {
-        github: 'https://github.com/yourusername/sfh',
+      title: 'Scaffold Documentation',
+      customCss: [
+        './src/tailwind.css',
+      ],
+      components: {
+        TwoColumnContent: './src/components/TwoColumnContent.astro',
       },
-      plugins: [
+      social: {
+        github: 'https://github.com/javierhinojosa/scaffold',
+      },
+      logo: {
+        src: './src/assets/logo.png',
+        alt: 'Scaffold Logo',
+      },
+      plugins: [starlightGiscus({
+        repo: 'javierhinojosa/scaffold',
+        repoId: 'R_kgDON4sFNQ',
+        category: 'Announcements',
+        categoryId: 'DIC_kwDON4sFNc4Cm6nO'
+    }),
         starlightLinksValidator(),
         starlightSidebarTopicsDropdown([
           {
@@ -99,5 +122,13 @@ export default defineConfig({
     }),
   ],
 
+  markdown: {
+    rehypePlugins: [rehypeMermaid],
+  },
+
   adapter: vercel(),
+
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

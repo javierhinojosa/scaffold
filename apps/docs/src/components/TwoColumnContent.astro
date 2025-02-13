@@ -1,0 +1,186 @@
+---
+import type { Props } from '../props';
+
+// Function to fetch last commit info for a file
+async function getGitHubFileHistory(filePath: string) {
+	const GITHUB_REPO = 'javierhinojosa/scaffold';
+	const GITHUB_BRANCH = 'main';
+	
+	try {
+		const response = await fetch(
+			`https://api.github.com/repos/${GITHUB_REPO}/commits?path=${filePath}&sha=${GITHUB_BRANCH}&per_page=1`
+		);
+		
+		if (!response.ok) return null;
+		
+		const [lastCommit] = await response.json();
+		if (!lastCommit) return null;
+		
+		return {
+			author: lastCommit.commit.author.name,
+			avatar: lastCommit.author?.avatar_url,
+			date: new Date(lastCommit.commit.author.date),
+			message: lastCommit.commit.message,
+			url: lastCommit.html_url
+		};
+	} catch (error) {
+		console.error('Error fetching GitHub history:', error);
+		return null;
+	}
+}
+
+// Get the current file's GitHub history
+const currentPath = Astro.props.currentFile || '';
+const commitInfo = await getGitHubFileHistory(currentPath);
+
+// Format the date
+function formatDate(date: Date) {
+	const now = new Date();
+	const diff = now.getTime() - date.getTime();
+	const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+	
+	if (days === 0) return 'today';
+	if (days === 1) return 'yesterday';
+	if (days < 30) return `${days} days ago`;
+	if (days < 365) return `${Math.floor(days / 30)} months ago`;
+	return `${Math.floor(days / 365)} years ago`;
+}
+
+// Format full date in Cancun timezone
+function formatFullDate(date: Date) {
+    return date.toLocaleString('en-US', {
+        timeZone: 'America/Cancun',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+    });
+}
+
+// Format compact date in Cancun timezone
+function formatCompactDate(date: Date) {
+    return date.toLocaleString('en-US', {
+        timeZone: 'America/Cancun',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+    });
+}
+---
+
+<div class="lg:sl-flex">
+	{
+		Astro.props.toc && (
+			<aside class="right-sidebar-container print:hidden">
+				<div class="right-sidebar">
+					<div class="doc-status-indicator m-4 p-5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+						<div class="flex items-center gap-3 mb-4">
+							<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+							<div class="flex-1">
+								<div class="flex items-center gap-2">
+									{commitInfo?.avatar && (
+										<img 
+											src={commitInfo.avatar} 
+											alt={`${commitInfo.author}'s avatar`}
+											class="w-5 h-5 rounded-full"
+										/>
+									)}
+									<div class="group relative">
+										<span class="text-sm text-gray-600 dark:text-gray-300">
+											<span class="mr-1">🕒</span>
+											Updated <span title={commitInfo ? formatFullDate(commitInfo.date) : ''}>{commitInfo ? formatDate(commitInfo.date) : 'recently'}</span>
+										</span>
+										{commitInfo && (
+											<span class="text-xs text-gray-400 dark:text-gray-500 ml-1">
+												({formatCompactDate(commitInfo.date)})
+											</span>
+										)}
+										{commitInfo && (
+											<div class="absolute -top-8 left-0 transform -translate-y-full bg-gray-900 text-white px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+												{formatFullDate(commitInfo.date)}
+											</div>
+										)}
+									</div>
+								</div>
+								{commitInfo && (
+									<a 
+										href={commitInfo.url}
+										target="_blank"
+										rel="noopener noreferrer" 
+										class="text-xs text-gray-500 dark:text-gray-400 hover:text-accent-500 mt-1 block"
+									>
+										by {commitInfo.author}
+									</a>
+								)}
+							</div>
+						</div>
+						
+						<div class="flex items-center gap-3 mb-4">
+							<div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+							<span class="text-sm text-gray-600 dark:text-gray-300">
+								<span class="mr-1">💡</span> 2 suggestions pending
+							</span>
+						</div>
+						
+						<div class="flex items-center gap-3">
+							<div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+							<span class="text-sm text-gray-600 dark:text-gray-300">
+								<span class="mr-1">✅</span> Code verified
+							</span>
+						</div>
+					</div>
+					<slot name="right-sidebar" />
+				</div>
+			</aside>
+		)
+	}
+	<div class="main-pane"><slot /></div>
+</div>
+
+<style>
+	.main-pane {
+		isolation: isolate;
+	}
+
+	.doc-status-indicator {
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	}
+
+	@media (min-width: 72rem) {
+		.right-sidebar-container {
+			order: 2;
+			position: relative;
+			width: calc(
+				var(--sl-sidebar-width) + (100% - var(--sl-content-width) - var(--sl-sidebar-width)) / 2
+			);
+		}
+
+		.right-sidebar {
+			position: fixed;
+			top: 0;
+			border-inline-start: 1px solid var(--sl-color-hairline);
+			padding-top: var(--sl-nav-height);
+			width: 100%;
+			height: 100vh;
+			overflow-y: auto;
+			scrollbar-width: none;
+		}
+
+		.main-pane {
+			width: 100%;
+		}
+
+		:global([data-has-sidebar][data-has-toc]) .main-pane {
+			--sl-content-margin-inline: auto 0;
+
+			order: 1;
+			width: calc(
+				var(--sl-content-width) + (100% - var(--sl-content-width) - var(--sl-sidebar-width)) / 2
+			);
+		}
+	}
+</style>

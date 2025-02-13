@@ -17,7 +17,7 @@ venv/
 
 # Environment files
 .env
-.env.*
+.env.development
 .env.local
 .env.*.local
 .env.test

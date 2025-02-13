@@ -1,6 +1,6 @@
-# SFH Monorepo
+# Scaffold Monorepo
 
-This monorepo contains the full stack application suite for SFH, including web applications, documentation, and shared packages.
+This monorepo contains the full stack application suite for scaffolding projects, including web applications, documentation, and shared packages.
 
 ## 📦 Project Structure
 
@@ -13,7 +13,6 @@ This monorepo contains the full stack application suite for SFH, including web a
 ├── packages/
 │   ├── backend/      # Shared backend services and API
 │   └── testing/      # Common testing utilities
-└── scripts/          # Development and utility scripts
 ```
 
 ## 🚀 Getting Started
@@ -28,8 +27,8 @@ This monorepo contains the full stack application suite for SFH, including web a
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd sfh
+git clone https://github.com/javierhinojosa/scaffold.git
+cd scaffold
 ```
 
 2. Install dependencies:
@@ -65,7 +64,7 @@ pnpm --filter docs dev
 
 # Start CrewAI development
 cd apps/crewai/development
-python src/main.py
+crewai run
 ```
 
 ### Project Commands
@@ -88,7 +87,3 @@ python src/main.py
 2. Make your changes
 3. Run tests and linting
 4. Submit a pull request
-
-## 📝 License
-
-[License details here] 
