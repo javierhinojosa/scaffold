@@ -1,0 +1,128 @@
+---
+title: Sarah - Documentation Engineer
+description: "Profile and achievements of our Documentation Engineer"
+---
+
+## Professional Profile
+
+Sarah is our Documentation Engineer, bringing expertise in technical documentation, software development, and quality assurance to our IT Department.
+
+## Agent Configuration
+
+```python
+from crewai import Agent
+
+sarah_agent = Agent(
+    role="Documentation Review Specialist",
+    goal="Ensure documentation accuracy and maintain perfect synchronization with codebase",
+    backstory="""Senior Documentation Engineer with extensive experience in technical documentation 
+    and software development. Specializes in maintaining documentation quality through 
+    automated validation and human expertise. Known for implementing robust documentation 
+    processes and achieving high accuracy rates.""",
+    verbose=True,
+    allow_delegation=False,
+    tools=[
+        "fetch_docs",
+        "extract_code_references",
+        "search_codebase",
+        "analyze_discrepancies",
+        "post_to_giscus"
+    ]
+)
+```
+
+## Role & Responsibilities
+
+As our Documentation Engineer, Sarah is responsible for:
+
+- Maintaining and improving documentation systems
+- Ensuring technical accuracy of all documentation
+- Implementing and monitoring quality standards
+- Managing the documentation review process
+- Coordinating with development teams
+- Implementing automation tools for validation
+
+## Areas of Expertise
+
+- **Technical Writing**
+  - Documentation system architecture
+  - Technical content creation
+  - Style guide development
+  - User-focused documentation
+
+- **Software Development**
+  - Documentation tooling
+  - Automation systems
+  - Code review
+  - Version control
+
+- **Quality Assurance**
+  - Documentation testing
+  - Code-documentation synchronization
+  - Quality metrics tracking
+  - Process improvement
+
+## Agent Capabilities
+
+### Tools & Methods
+
+```python
+class DocumentationTools:
+    """Core tools used by Sarah for documentation management"""
+    
+    def fetch_docs(self, url: str) -> str:
+        """Fetches content from local MDX files"""
+        return "Retrieves and parses documentation content"
+        
+    def extract_code_references(self, markdown_text: str) -> List[str]:
+        """Extracts code references from documentation"""
+        return ["Identifies and extracts code examples and references"]
+        
+    def search_codebase(self, repo_path: str, keywords: List[str]) -> List[str]:
+        """Searches codebase for relevant files"""
+        return ["Finds related code files"]
+        
+    def analyze_discrepancies(self, doc_content: str, code_files: List[str]) -> List[dict]:
+        """Analyzes differences between docs and code"""
+        return [{"type": "analysis", "findings": "Documentation-code comparison results"}]
+        
+    def post_to_giscus(self, content: str) -> bool:
+        """Posts review findings to GitHub Discussions"""
+        return True
+```
+
+### Performance Metrics
+
+```python
+documentation_metrics = {
+    "accuracy_rate": 0.95,  # 95% documentation-code sync rate
+    "response_time": 240,   # 4 hours average response
+    "review_completion": 0.90,  # 90% review completion rate
+    "false_positive": 0.05,  # 5% false positive rate
+}
+```
+
+## Task Examples
+
+```python
+from crewai import Task
+
+# Example tasks Sarah can handle
+tasks = [
+    Task(
+        description="Review new documentation for code accuracy",
+        expected_output="Validation report with any discrepancies found",
+        tools=["fetch_docs", "extract_code_references", "analyze_discrepancies"]
+    ),
+    Task(
+        description="Update documentation based on code changes",
+        expected_output="Updated documentation reflecting code changes",
+        tools=["search_codebase", "analyze_discrepancies"]
+    ),
+    Task(
+        description="Generate documentation health report",
+        expected_output="Comprehensive report on documentation status",
+        tools=["fetch_docs", "analyze_discrepancies", "post_to_giscus"]
+    )
+]
+```

@@ -58,7 +58,7 @@ export default defineConfig({
         starlightSidebarTopicsDropdown([
           {
             label: 'Development',
-            link: '/dev/',
+            link: '/',
             icon: 'open-book',
             items: [
                 {
@@ -128,10 +128,37 @@ export default defineConfig({
             ],
           },
           {
+            label: 'Operations',
+            link: '/ops/',
+            icon: 'setting',
+            items: [
+                {
+                    label: 'Overview',
+                    items: [
+                      { label: 'Introduction', link: '/ops/' },
+                    ],
+                },
+                {
+                    label: 'IT Department',
+                    items: [
+                      { label: 'Documentation Management', link: '/ops/it-department/docs/' },
+                      { label: 'Team Members', link: '/ops/it-department/team/' },
+                    ],
+                },
+            ],
+          },
+          {
             label: 'Reference',
-            link: '/reference/',
+            link: '/ref/',
             icon: 'information',
-            items: ['reference/example'],
+            items: [
+              {
+                label: 'Staff Directory',
+                items: [
+                  { label: 'Sarah', link: '/ref/staff/sarah/' }
+                ]
+              },
+            ],
           },
         ]),
       ],
