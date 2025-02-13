@@ -11,6 +11,10 @@ import re
 from pathlib import Path
 from pydantic import Field, PrivateAttr
 import pathspec
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -104,6 +108,7 @@ class DocsReviewAgent:
         ]
         logger.info("Tools initialized successfully")
             
+        # Create the base CrewAI agent
         self.crewai_agent = Agent(
             role="Documentation Reviewer",
             goal="Analyze documentation for inconsistencies with the codebase and suggest improvements",
@@ -560,7 +565,11 @@ class DocsReviewAgent:
         from anthropic import Anthropic
         
         discrepancies = []
-        anthropic = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not found in environment variables. Please add it to your .env file.")
+                
+        anthropic = Anthropic(api_key=api_key)
         
         # Prepare the context for Claude
         prompt = f"""You are performing a documentation verification task. You need to compare code examples from documentation against the actual codebase implementation.
@@ -610,7 +619,7 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
         try:
             # Get Claude's analysis
             response = anthropic.messages.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-haiku-20240307",
                 max_tokens=4096,
                 temperature=0,
                 system="You are a documentation verification assistant specialized in comparing code examples against actual implementations. Be thorough and precise in identifying discrepancies.",
@@ -749,6 +758,191 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
                 }
         return {}
 
+    def _check_docs_quality(self, doc_content: str, file_path: str) -> List[dict]:
+        """Checks documentation for quality requirements using Claude."""
+        logger.info(f"Checking documentation quality for {file_path}")
+        issues = []
+        
+        try:
+            from anthropic import Anthropic
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                raise ValueError("ANTHROPIC_API_KEY not found in environment variables. Please add it to your .env file.")
+                
+            anthropic = Anthropic(api_key=api_key)
+            
+            # Prepare the prompt for Claude
+            prompt = f"""Analyze this markdown documentation and identify if it contains any "Overview" headers (# Overview or ## Overview).
+If found, provide the line number and surrounding context.
+Only identify actual headers, not the word "Overview" used in other contexts.
+
+Documentation to analyze:
+```markdown
+{doc_content}
+```
+
+Respond in this exact JSON format:
+{{
+    "has_overview_header": boolean,
+    "findings": [
+        {{
+            "line_number": number,
+            "header_text": "the exact header text",
+            "context": "surrounding text (about 100 chars before and after)"
+        }}
+    ]
+}}"""
+
+            # Get Claude's analysis
+            response = anthropic.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=1024,
+                temperature=0,
+                system="You are a documentation quality checker. Be precise in identifying Overview headers in markdown files. Only respond with the exact JSON format specified.",
+                messages=[{
+                    "role": "user",
+                    "content": prompt
+                }]
+            )
+            
+            # Parse the response
+            import json
+            analysis = json.loads(response.content[0].text)
+            
+            # Add issues based on findings
+            if analysis.get("has_overview_header"):
+                for finding in analysis.get("findings", []):
+                    issues.append({
+                        'file': file_path,
+                        'type': 'quality_issue',
+                        'category': 'unnecessary_header',
+                        'line_number': finding['line_number'],
+                        'issue': 'Unnecessary "Overview" header found',
+                        'explanation': 'The "Overview" header is automatically added by the table of contents and should be removed',
+                        'context': finding['context'],
+                        'recommendation': 'Remove the "Overview" header and keep the content'
+                    })
+                    
+        except Exception as e:
+            logger.error(f"Error during Claude analysis: {e}")
+            
+        return issues
+
+    def scan_docs_quality(self, docs_dir: str) -> dict:
+        """Scans all documentation files in the specified directory for quality issues."""
+        logger.info(f"Starting documentation quality scan in {docs_dir}")
+        all_issues = []
+        
+        try:
+            # Get list of all markdown files
+            markdown_files = []
+            for root, _, files in os.walk(docs_dir):
+                for file in files:
+                    if file.endswith(('.md', '.mdx')):
+                        file_path = os.path.join(root, file)
+                        markdown_files.append(file_path)
+            
+            total_files = len(markdown_files)
+            processed_files = 0
+            
+            if total_files == 0:
+                logger.warning(f"No markdown files found in {docs_dir}")
+                print(f"\nNo markdown files found in {docs_dir}")
+                return {
+                    "success": True,
+                    "issues_found": 0,
+                    "issues": [],
+                    "report": self._generate_quality_report([])
+                }
+            
+            print(f"\nScanning {total_files} documentation files...")
+            print("Progress: ", end="", flush=True)
+            
+            for file_path in markdown_files:
+                relative_path = os.path.relpath(file_path, docs_dir)
+                
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Print progress
+                    processed_files += 1
+                    progress = (processed_files / total_files) * 100
+                    print(f"\rProgress: {progress:.1f}% - Checking: {relative_path:<60}", end="", flush=True)
+                    
+                    # Check quality requirements
+                    issues = self._check_docs_quality(content, relative_path)
+                    
+                    # Print findings for current file
+                    if issues:
+                        print(f"\nFound {len(issues)} issue(s) in {relative_path}")
+                    
+                    all_issues.extend(issues)
+                    
+                except Exception as e:
+                    print(f"\nError processing file {file_path}: {e}")
+                    logger.error(f"Error processing file {file_path}: {e}")
+            
+            # Clear the progress line and print summary
+            print("\n")
+            if all_issues:
+                print(f"Found total of {len(all_issues)} quality issues in {total_files} files.")
+            else:
+                print(f"No quality issues found in {total_files} files.")
+            
+        except Exception as e:
+            logger.error(f"Error scanning docs directory: {e}")
+            raise
+            
+        # Generate report
+        report = self._generate_quality_report(all_issues)
+        
+        return {
+            "success": True,
+            "issues_found": len(all_issues),
+            "issues": all_issues,
+            "report": report
+        }
+
+    def _generate_quality_report(self, issues: List[dict]) -> str:
+        """Generates a formatted report of documentation quality issues."""
+        report = f"# Documentation Quality Report\n\n"
+        
+        if not issues:
+            report += "✅ **No quality issues found in documentation.**\n"
+            return report
+            
+        report += f"## Found Issues ({len(issues)})\n\n"
+        
+        # Group issues by file
+        by_file = {}
+        for issue in issues:
+            file_path = issue['file']
+            if file_path not in by_file:
+                by_file[file_path] = []
+            by_file[file_path].append(issue)
+        
+        for file_path, file_issues in by_file.items():
+            report += f"### File: `{file_path}`\n\n"
+            
+            for i, issue in enumerate(file_issues, 1):
+                report += f"#### Issue {i}: {issue['issue']}\n"
+                report += f"- **Category**: {issue['category']}\n"
+                report += f"- **Line**: {issue['line_number']}\n"
+                report += f"- **Explanation**: {issue['explanation']}\n"
+                
+                if issue.get('context'):
+                    report += "\nContext:\n```markdown\n"
+                    report += issue['context']
+                    report += "\n```\n"
+                    
+                report += f"\n**Recommendation**: {issue['recommendation']}\n\n"
+                
+        report += "## Summary of Requirements\n"
+        report += "1. ❌ Do not include '# Overview' headers - these are automatically added by the table of contents\n"
+        
+        return report
+
     def review_documentation(self, docs_url: str, repo_path: str, repo_name: str, discussion_category_id: str) -> dict:
         """Main method to perform a complete documentation review."""
         try:
@@ -762,16 +956,20 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
                 logger.error(error_msg)
                 return {"error": error_msg}
             
-            # 2. Extract related files
-            logger.info("Step 2: Extracting related files")
+            # 2. Check quality requirements
+            logger.info("Step 2: Checking quality requirements")
+            quality_issues = self._check_docs_quality(doc_content, docs_url)
+            
+            # 3. Extract related files
+            logger.info("Step 3: Extracting related files")
             related_files = self._extract_related_files(doc_content)
             
-            # 3. Extract code references as backup
-            logger.info("Step 3: Extracting additional code references")
+            # 4. Extract code references as backup
+            logger.info("Step 4: Extracting additional code references")
             code_refs = self.extract_code_references(doc_content)
             
-            # 4. Verify each related file
-            logger.info("Step 4: Verifying code examples")
+            # 5. Verify each related file
+            logger.info("Step 5: Verifying code examples")
             all_discrepancies = []
             
             # First check related files
@@ -790,12 +988,12 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
                         discrepancies = self._verify_code_examples(doc_content, full_path)
                         all_discrepancies.extend(discrepancies)
             
-            # 5. Generate report
-            logger.info("Step 5: Generating report")
-            report = self._generate_report(docs_url, all_discrepancies, related_files)
+            # 6. Generate combined report
+            logger.info("Step 6: Generating report")
+            report = self._generate_combined_report(docs_url, all_discrepancies, related_files, quality_issues)
             
-            # 6. Post to GitHub Discussions
-            logger.info("Step 6: Posting to GitHub Discussions")
+            # 7. Post to GitHub Discussions
+            logger.info("Step 7: Posting to GitHub Discussions")
             posted = self.post_to_giscus(repo_name, discussion_category_id, report)
             
             result = {
@@ -803,6 +1001,7 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
                 "docs_url": docs_url,
                 "related_files": related_files,
                 "discrepancies_found": len(all_discrepancies),
+                "quality_issues_found": len(quality_issues),
                 "report": report
             }
             
@@ -813,24 +1012,41 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
             logger.error(error_msg)
             raise
 
-    def _generate_report(self, docs_url: str, discrepancies: List[dict], related_files: List[str]) -> str:
-        """Generates a formatted report of the documentation review."""
+    def _generate_combined_report(self, docs_url: str, discrepancies: List[dict], related_files: List[str], quality_issues: List[dict]) -> str:
+        """Generates a combined report including both code discrepancies and quality issues."""
         report = f"# Documentation Review Report\n\n"
         report += f"## Reviewed Documentation\n{docs_url}\n\n"
         
+        # Quality Issues Section
+        report += "## Documentation Quality Issues\n"
+        if quality_issues:
+            report += f"\nFound {len(quality_issues)} quality issue(s):\n\n"
+            for issue in quality_issues:
+                report += f"### {issue['issue']}\n"
+                report += f"- **Line**: {issue['line_number']}\n"
+                report += f"- **Explanation**: {issue['explanation']}\n"
+                if issue.get('context'):
+                    report += "\nContext:\n```markdown\n"
+                    report += issue['context']
+                    report += "\n```\n"
+                report += f"\n**Recommendation**: {issue['recommendation']}\n\n"
+        else:
+            report += "\n✅ No quality issues found.\n"
+        
         # List related files
-        report += "## Related Files\n"
+        report += "\n## Related Files\n"
         if related_files:
             for file in related_files:
                 report += f"- `{file}`\n"
         else:
             report += "*No related files explicitly mentioned in documentation*\n"
         
+        # Code Discrepancies Section
         if not discrepancies:
-            report += "\n✅ **No discrepancies found between documentation and codebase.**\n"
+            report += "\n✅ **No code discrepancies found between documentation and codebase.**\n"
             return report
             
-        report += f"\n## Found Discrepancies ({len(discrepancies)})\n"
+        report += f"\n## Code Discrepancies ({len(discrepancies)})\n"
         
         # Group discrepancies by file
         by_file = {}
@@ -892,5 +1108,68 @@ Only include actual discrepancies. If the code is equivalent, return an empty li
         report += "2. Add version information to code examples if they represent older versions\n"
         report += "3. Consider adding automated documentation testing to your CI/CD pipeline\n"
         report += "4. Review the 'Related Files' section to ensure all relevant files are listed\n"
+        report += "5. Address any quality issues found to improve documentation consistency\n"
         
-        return report 
+        return report
+
+    def review_docs_quality(self, docs_url: str, repo_name: str, discussion_category_id: str) -> dict:
+        """Reviews a single documentation file for quality issues."""
+        try:
+            logger.info(f"Starting documentation quality review for {docs_url}")
+            
+            # 1. Fetch documentation
+            logger.info("Step 1: Fetching documentation")
+            doc_content = self.fetch_docs(docs_url)
+            if not doc_content:
+                error_msg = "Failed to fetch documentation"
+                logger.error(error_msg)
+                return {"error": error_msg}
+            
+            # 2. Check quality requirements
+            logger.info("Step 2: Checking quality requirements")
+            quality_issues = self._check_docs_quality(doc_content, docs_url)
+            
+            # 3. Generate quality report
+            logger.info("Step 3: Generating report")
+            report = self._generate_quality_report(quality_issues)
+            
+            # 4. Post to GitHub Discussions
+            logger.info("Step 4: Posting to GitHub Discussions")
+            posted = self.post_to_giscus(repo_name, discussion_category_id, report)
+            
+            result = {
+                "success": posted,
+                "docs_url": docs_url,
+                "quality_issues_found": len(quality_issues),
+                "report": report
+            }
+            
+            return result
+            
+        except Exception as e:
+            error_msg = f"Error during documentation quality review: {str(e)}"
+            logger.error(error_msg)
+            raise
+
+    def review_docs_quality_directory(self, docs_dir: str, repo_name: str, discussion_category_id: str) -> dict:
+        """Reviews all documentation files in a directory for quality issues."""
+        try:
+            logger.info(f"Starting documentation quality review for directory: {docs_dir}")
+            
+            # 1. Scan the directory
+            scan_result = self.scan_docs_quality(docs_dir)
+            
+            # 2. Post to GitHub Discussions if there are issues
+            if scan_result["issues_found"] > 0:
+                logger.info("Posting quality report to GitHub Discussions")
+                posted = self.post_to_giscus(repo_name, discussion_category_id, scan_result["report"])
+                scan_result["success"] = posted
+            else:
+                scan_result["success"] = True
+            
+            return scan_result
+            
+        except Exception as e:
+            error_msg = f"Error during documentation quality directory review: {str(e)}"
+            logger.error(error_msg)
+            raise 
