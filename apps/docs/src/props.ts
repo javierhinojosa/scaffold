@@ -5,7 +5,14 @@ export interface Props extends StarlightProps {
         data: {
             title: string;
             description?: string;
-            file?: string;
+            frontmatter?: {
+                suggestions?: Array<{
+                    text: string;
+                    author?: string;
+                    date?: string;
+                }>;
+                [key: string]: any;
+            };
             suggestions?: Array<{
                 text: string;
                 author?: string;
@@ -13,5 +20,19 @@ export interface Props extends StarlightProps {
             }>;
             [key: string]: any;
         };
+        render: () => Promise<{
+            Content: any;
+            headings: any[];
+            remarkPluginFrontmatter: {
+                title: string;
+                description?: string;
+                suggestions?: Array<{
+                    text: string;
+                    author?: string;
+                    date?: string;
+                }>;
+                [key: string]: any;
+            };
+        }>;
     };
 } 

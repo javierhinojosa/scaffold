@@ -15,7 +15,17 @@ export default defineConfig({
     enabled: false
   },
 
+  vite: {
+    plugins: [tailwindcss()],
+    define: {
+      'import.meta.env.GITHUB_REPO': JSON.stringify(process.env.GITHUB_REPO),
+      'import.meta.env.GITHUB_BRANCH': JSON.stringify(process.env.GITHUB_BRANCH),
+      'import.meta.env.GITHUB_TOKEN': JSON.stringify(process.env.GITHUB_TOKEN),
+    },
+  },
+
   integrations: [
+   
     starlight({
       title: 'Scaffold Documentation',
       customCss: [
@@ -128,8 +138,4 @@ export default defineConfig({
   },
 
   adapter: vercel(),
-
-  vite: {
-    plugins: [tailwindcss()],
-  },
 });

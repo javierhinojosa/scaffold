@@ -1,7 +1,6 @@
 ---
 title: Scaffold Monorepo Documentation
 description: A comprehensive template monorepo combining powerful tools to meet any organization's development needs
-file: apps/docs/src/content/docs/index.mdx
 suggestions:
   - text: "Add a section about deployment strategies and CI/CD pipeline setup"
     author: "DevOps Team"
@@ -14,15 +13,18 @@ suggestions:
     date: "Jan 30, 2024"
 ---
 
+import { FileTree } from '@astrojs/starlight/components';
+
+
 ## Welcome to Scaffold
 
-Scaffold is a carefully crafted template monorepo that combines modern development tools, practices, and architectures to provide a robust foundation for any organization's development needs. Whether you're building web applications, AI services, documentation sites, or complex enterprise systems, this template provides the structure and tooling to accomplish it all.
+Scaffold is a carefully crafted template monorepo that combines modern development tools, practices, and architectures to provide a robust foundation for any organization's development needs. Whether we're building web applications, AI services, documentation sites, or complex enterprise systems, this template provides the structure and tooling to accomplish it all.
 
 ### About This Documentation
 
 This documentation site is built using [Starlight](https://starlight.astro.build/), a powerful documentation framework powered by Astro. It showcases how to build a modern, performant documentation site with features like:
 
-- 🎨 Beautiful, accessible theme with dark mode support
+
 - 📱 Fully responsive design
 - 🔍 Full-text search
 - 💬 Comments integration with Giscus
@@ -36,12 +38,15 @@ Check out the [Documentation Site](/dev/apps/docs/) section to learn how to cust
 
 The monorepo demonstrates a scalable organization pattern with:
 
-- `apps/*` - Contains example applications showcasing different capabilities
-  - `admin` - Modern admin dashboard application
-  - `docs` - Documentation site with best practices
-  - `crewai` - AI-powered automation and workflows
-- `packages/*` - Shared libraries and utilities
-  - `testing` - Common testing utilities and configurations
+<FileTree>
+- apps/ - Frontend astro applications 
+  - admin/ - Modern admin dashboard application
+  - docs/ - Documentation site with best practices
+  - crewai/ - AI-powered automation and workflows
+- packages/ - Shared libraries and utilities
+  - testing/ - Common testing utilities and configurations
+  - backend/ - Shared backend utilities and configurations
+</FileTree>
 
 ### Key Features
 
