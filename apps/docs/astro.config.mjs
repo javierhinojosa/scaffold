@@ -23,6 +23,7 @@ export default defineConfig({
       ],
       components: {
         TwoColumnContent: './src/components/TwoColumnContent.astro',
+        MarkdownContent: './src/components/MarkdownContent.astro',
       },
       social: {
         github: 'https://github.com/javierhinojosa/scaffold',
