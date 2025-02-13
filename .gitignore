@@ -13,6 +13,7 @@ venv/
 /out/
 /build/
 /dist/
+.astro/
 
 # Environment files
 .env
@@ -20,6 +21,8 @@ venv/
 .env.local
 .env.*.local
 .env.test
+.env.production
+.env.keys
 
 # Debug logs
 logs/
@@ -57,7 +60,7 @@ next-env.d.ts
 .favorites.json
 *storybook.log
 mise.toml
-.turbo/
+.turbo
 
 # Storage
 storage/privkeys/*
@@ -66,3 +69,7 @@ storage/privkeys/*
 __pycache__/
 *.py[cod]
 *.so
+
+# Supabase
+.branches
+.temp

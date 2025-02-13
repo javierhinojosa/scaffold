@@ -23,7 +23,7 @@ sitemap_task:
     2. List and describe main directories and their purpose
     3. Document key files and their roles
     4. Keep individual descriptions under 100 words
-    5. Add timestamp at the bottom showing last update date
+    5. Add timestamp at the bottom in the format: "Last updated: YYYY-MM-DD HH:mm:ss"
     Focus on providing both broad structure via file tree and specific details about key components.
   expected_output: >
     A comprehensive markdown document with:
@@ -31,7 +31,7 @@ sitemap_task:
     2. Root structure explanation
     3. Key component descriptions
     4. Important relationships
-    5. Last updated timestamp
+    5. Last updated timestamp in specified format
     Format the file tree with proper markdown code block formatting.
     Keep descriptions clear and concise.
     Total content should be under 2000 words (excluding file tree).
@@ -40,15 +40,24 @@ sitemap_task:
 
 validation_task:
   description: >
-    List critical documentation gaps:
-    1. Check apps/docs directory
-    2. List top 5 missing docs
-    3. Suggest quick fixes
-    Keep it very brief and high-level.
+    Analyze documentation coverage and gaps:
+    1. Check documentation in apps/docs/src/content/docs
+    2. Review main documentation files in each app directory
+    3. Compare against expected documentation:
+       - README files
+       - Setup instructions
+       - API documentation
+       - Development guides
+       - Architecture documentation
+    4. List critical missing documentation
+    5. Suggest practical fixes
+    Keep analysis focused on major gaps affecting project understanding.
   expected_output: >
-    A short report with:
-    1. Top 5 documentation gaps
-    2. Quick fix suggestions
+    A concise report containing:
+    1. List of critical documentation gaps (max 5)
+    2. Quick fix suggestions for each gap
+    3. Priority level for each gap (High/Medium/Low)
     Keep total length under 500 words.
+    Format in markdown with clear sections.
   agent: docs_validator
   output_file: docs/validation_report.md
