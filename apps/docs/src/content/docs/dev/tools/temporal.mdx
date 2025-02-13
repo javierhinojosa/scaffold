@@ -10,6 +10,7 @@ description: Learn how to set up and use Temporal for workflow orchestration in 
 ## Prerequisites
 
 Before working with Temporal, ensure you have:
+
 - [Homebrew](https://brew.sh/) installed on your macOS system
 - Node.js and pnpm (as per our [getting started guide](/dev/getting-started))
 - Python 3.x installed for our Flask-based Temporal server
@@ -17,11 +18,13 @@ Before working with Temporal, ensure you have:
 ## Installation
 
 1. Install the Temporal CLI using Homebrew:
+
    ```bash
    brew install temporal
    ```
 
 2. Set up the Python environment for our Flask-based Temporal server:
+
    ```bash
    cd apps/temporal
    python -m venv venv
@@ -30,6 +33,7 @@ Before working with Temporal, ensure you have:
    ```
 
    Our Flask server uses the following key dependencies:
+
    ```
    flask==3.0.2
    temporalio==1.9.0
@@ -83,6 +87,7 @@ The worker process connects to the Temporal server and executes workflow activit
 When developing locally, you need to run three components in separate terminals:
 
 1. Start the Temporal server:
+
    ```bash
    temporal server start-dev
    ```
@@ -90,6 +95,7 @@ When developing locally, you need to run three components in separate terminals:
    This starts a local Temporal server with default configurations. The Web UI will be available at [http://localhost:8233](http://localhost:8233).
 
 2. Start the Flask server:
+
    ```bash
    cd apps/temporal
    source venv/bin/activate
@@ -141,10 +147,12 @@ curl http://localhost:5000/workflows
 Common issues and solutions:
 
 1. If the Temporal server fails to start:
+
    - Check if the ports (7233 for gRPC, 8233 for Web UI) are available
    - Ensure no other Temporal instance is running
 
 2. If workflow execution fails:
+
    - Check the Web UI for detailed error messages
    - Verify your workflow code is deterministic
    - Ensure your worker is running and connected to the server
@@ -159,4 +167,4 @@ Common issues and solutions:
 - [Temporal Documentation](https://docs.temporal.io/)
 - [TypeScript SDK Reference](https://typescript.temporal.io/)
 - [Temporal Patterns](https://docs.temporal.io/dev-guide/typescript/patterns)
-- [Flask Documentation](https://flask.palletsprojects.com/) 
+- [Flask Documentation](https://flask.palletsprojects.com/)

@@ -3,20 +3,24 @@
 ## Critical Documentation Gaps
 
 1. **Missing main documentation index (`docs/index.mdx`)**
-   - Priority: High 
+
+   - Priority: High
    - Quick Fix: Create a `docs/index.mdx` file that provides an overview of the documentation and clear navigation to key sections.
 
 2. **Incomplete `docs/` subdirectories**
+
    - Priority: High
    - Quick Fix: Ensure the `docs/dev/` and `docs/reference/` directories contain the expected documentation types (e.g. setup guides in `dev/`, API references in `reference/`). Create placeholder files outlining planned documentation.
 
 3. **Missing README for crewAI development (`apps/crewai/development/README.md`)**
+
    - Priority: High
    - Quick Fix: Add a `README.md` file in `apps/crewai/development/` explaining the purpose of the crewAI tool, how to configure and run it, and where its outputs are located.
 
 4. **Lack of detailed architecture documentation**
+
    - Priority: Medium
-   - Quick Fix: Create an `ARCHITECTURE.md` file in the root or `docs/` directory that provides a high-level technical overview of the system architecture, key components and their relationships. 
+   - Quick Fix: Create an `ARCHITECTURE.md` file in the root or `docs/` directory that provides a high-level technical overview of the system architecture, key components and their relationships.
 
 5. **No contribution guidelines**
    - Priority: Medium

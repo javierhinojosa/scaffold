@@ -38,4 +38,4 @@ export type {
   AuthTokenResponse,
 } from '@supabase/supabase-js';
 
-export * from './auth'; 
+export * from './auth';

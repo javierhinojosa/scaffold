@@ -148,12 +148,12 @@ This repository contains the full stack application suite for SFH, including web
 
 ## Top-Level Structure
 
-- `.npmrc`, `.turbo/`: Configuration for npm and Turbo monorepo tools 
+- `.npmrc`, `.turbo/`: Configuration for npm and Turbo monorepo tools
 - `README.md`: Overview documentation for the repository
 - `apps/`: Contains the main applications of the project
 - `packages/`: Shared packages used across applications
 - `scripts/`: Utility and development scripts
-- `pnpm-workspace.yaml`, `package.json`, `turbo.json`: Monorepo configuration 
+- `pnpm-workspace.yaml`, `package.json`, `turbo.json`: Monorepo configuration
 - `tsconfig.base.json`: Base TypeScript configuration extended by apps/packages
 
 ## Applications (`apps/`)

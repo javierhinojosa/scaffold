@@ -14,8 +14,12 @@ describe('Welcome', () => {
 
     const { document } = dom.window;
     expect(document.querySelector('h1')?.textContent).toContain('To get started');
-    expect(document.querySelector('a[href="https://docs.astro.build"]')?.textContent).toBe('Read our docs');
-    expect(document.querySelector('a[href="https://astro.build/chat"]')?.textContent).toContain('Join our Discord');
+    expect(document.querySelector('a[href="https://docs.astro.build"]')?.textContent).toBe(
+      'Read our docs'
+    );
+    expect(document.querySelector('a[href="https://astro.build/chat"]')?.textContent).toContain(
+      'Join our Discord'
+    );
     expect(document.querySelector('img[alt="Astro Homepage"]')?.getAttribute('width')).toBe('115');
   });
-}); 
+});

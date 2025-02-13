@@ -29,7 +29,7 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   // Disable the default dev toolbar for cleaner development
   devToolbar: {
-    enabled: false
+    enabled: false,
   },
 
   // Enable server-side rendering
@@ -38,19 +38,19 @@ export default defineConfig({
   // Configure integrations
   integrations: [
     // Enable Svelte components
-    svelte()
+    svelte(),
   ],
 
   // Configure Vite plugins
   vite: {
     plugins: [
       // Enable Tailwind CSS
-      tailwindcss()
-    ]
+      tailwindcss(),
+    ],
   },
 
   // Configure deployment adapter
-  adapter: vercel()
+  adapter: vercel(),
 });
 ```
 
@@ -95,7 +95,7 @@ apps/admin/
 
 ### Component Organization
 
-The `components/` directory is where we spend most of our time. We encourage organizing components based on what makes sense for your application. 
+The `components/` directory is where we spend most of our time. We encourage organizing components based on what makes sense for your application.
 
 ```
 components/
@@ -114,6 +114,7 @@ components/
 ```
 
 The key principles are:
+
 - Organize components in a way that scales with your application requirements
 - Keep related code close together (components, tests, utilities)
 - Make it easy for team members to locate and work with components
@@ -192,7 +193,7 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [tailwindcss()]
+  plugins: [tailwindcss()],
 });
 ```
 
@@ -255,19 +256,23 @@ pnpm test:e2e:ui
 ### Performance
 
 1. **Selective Hydration**
+
    - Use `client:load` only when necessary
    - Prefer `client:visible` for below-the-fold content
    - Keep JavaScript bundles small
 
 2. **Image Optimization**
+
    ```astro
    ---
    import { Image } from 'astro:assets';
    ---
+
    <Image src={import('../assets/image.png')} alt="Description" />
    ```
 
 3. **API Routes**
+
    ```ts
    // src/pages/api/data.ts
    import type { APIRoute } from 'astro';
@@ -280,6 +285,7 @@ pnpm test:e2e:ui
 ### Type Safety
 
 1. **Component Props**
+
    ```astro
    ---
    interface Props {
@@ -292,6 +298,7 @@ pnpm test:e2e:ui
    ```
 
 2. **API Types**
+
    ```ts
    import type { APIContext } from 'astro';
 
@@ -346,4 +353,4 @@ const { title } = Astro.props;
 - [Astro Documentation](https://docs.astro.build)
 - [Astro + Svelte Integration](https://docs.astro.build/en/guides/integrations-guide/svelte/)
 - [Astro + Vercel Deployment](https://docs.astro.build/en/guides/deploy/vercel/)
-- [Astro + Tailwind CSS](https://docs.astro.build/en/guides/integrations-guide/tailwind/) 
+- [Astro + Tailwind CSS](https://docs.astro.build/en/guides/integrations-guide/tailwind/)

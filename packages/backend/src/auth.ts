@@ -25,7 +25,7 @@ export class Auth {
       email,
       password,
     });
-    
+
     if (error) throw error;
     return { user: data.user, session: data.session };
   }
@@ -35,7 +35,7 @@ export class Auth {
       email,
       password,
     });
-    
+
     if (error) throw error;
     return { user: data.user, session: data.session };
   }
@@ -46,7 +46,10 @@ export class Auth {
   }
 
   async getCurrentUser() {
-    const { data: { user }, error } = await this.supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await this.supabaseClient.auth.getUser();
     if (error) throw error;
     return user;
   }
@@ -76,7 +79,9 @@ export function createSvelteAuthStore(options: {
 
   async function init() {
     try {
-      const { data: { session } } = await options.auth.client.auth.getSession();
+      const {
+        data: { session },
+      } = await options.auth.client.auth.getSession();
       store.set({ user: session?.user ?? null, loading: false });
 
       options.auth.onAuthStateChange((user) => {
@@ -94,4 +99,4 @@ export function createSvelteAuthStore(options: {
   init();
 
   return store;
-} 
+}

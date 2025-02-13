@@ -26,17 +26,20 @@ This monorepo contains the full stack application suite for scaffolding projects
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/javierhinojosa/scaffold.git
 cd scaffold
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Set up Python virtual environment (for CrewAI):
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
@@ -44,9 +47,11 @@ pip install -r apps/crewai/development/requirements.txt
 ```
 
 4. Create environment variables:
+
 ```bash
 cp .env.example .env
 ```
+
 Edit `.env` with your configuration values.
 
 ## 🛠️ Development

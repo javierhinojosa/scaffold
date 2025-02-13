@@ -47,6 +47,7 @@ The root `tsconfig.base.json` serves as the foundation for all TypeScript config
 ```
 
 Key features:
+
 - Modern JavaScript features (ES2022)
 - ESM module system
 - Strict type checking enabled
@@ -71,7 +72,8 @@ Key features:
   }
   ```
 
-  The admin app configuration integrates with Astro and includes testing type definitions.
+The admin app configuration integrates with Astro and includes testing type definitions.
+
   </TabItem>
 
   <TabItem label="Backend">
@@ -86,7 +88,8 @@ Key features:
   }
   ```
 
-  The backend configuration is optimized for Node.js development with output generation enabled.
+The backend configuration is optimized for Node.js development with output generation enabled.
+
   </TabItem>
 
   <TabItem label="Documentation">
@@ -102,7 +105,8 @@ Key features:
   }
   ```
 
-  The documentation site uses a similar setup to the admin app with Astro integration.
+The documentation site uses a similar setup to the admin app with Astro integration.
+
   </TabItem>
 </Tabs>
 
@@ -112,10 +116,10 @@ We use a consistent path alias system across all projects to make imports cleane
 
 ### Available Aliases
 
-| Alias | Purpose | Example |
-|-------|---------|---------|
-| `@/*` | Project-local imports | `import { Button } from '@/components/Button'` |
-| `@sfh/*` | Cross-package imports | `import { utils } from '@sfh/shared/utils'` |
+| Alias    | Purpose               | Example                                        |
+| -------- | --------------------- | ---------------------------------------------- |
+| `@/*`    | Project-local imports | `import { Button } from '@/components/Button'` |
+| `@sfh/*` | Cross-package imports | `import { utils } from '@sfh/shared/utils'`    |
 
 ### Example Usage
 
@@ -134,10 +138,12 @@ import { Button } from '@/components/Button';
 ### Configuration Guidelines
 
 1. **Extend Base Config**
+
    - Always extend from `tsconfig.base.json`
    - Add project-specific settings only when necessary
 
 2. **Path Aliases**
+
    - Use `@/*` for project-local imports
    - Use `@sfh/*` for cross-package imports
    - Avoid deep relative imports
@@ -150,6 +156,7 @@ import { Button } from '@/components/Button';
 ### Code Organization
 
 1. **Type Definitions**
+
    - Place shared types in appropriate `@types` directories
    - Co-locate component types with their implementations
    - Use barrel files for type exports
@@ -168,6 +175,7 @@ import { Button } from '@/components/Button';
 ### Common Issues
 
 1. **Path Aliases Not Working**
+
    ```bash
    # Verify TypeScript is using the correct config
    npx tsc --showConfig
@@ -177,6 +185,7 @@ import { Button } from '@/components/Button';
    ```
 
 2. **Type Errors After Updates**
+
    ```bash
    # Update dependencies and rebuild
    pnpm install
@@ -191,6 +200,7 @@ import { Button } from '@/components/Button';
 For optimal TypeScript support in VS Code:
 
 1. Install recommended extensions:
+
    - TypeScript and JavaScript Language Features
    - Svelte for VS Code
    - Astro
@@ -208,4 +218,4 @@ For optimal TypeScript support in VS Code:
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 - [TypeScript with Astro](https://docs.astro.build/en/guides/typescript/)
 - [Svelte TypeScript Support](https://svelte.dev/docs/typescript)
-- [tsconfig Reference](https://www.typescriptlang.org/tsconfig) 
+- [tsconfig Reference](https://www.typescriptlang.org/tsconfig)

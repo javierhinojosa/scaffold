@@ -1,7 +1,10 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-export function createTestClient(supabaseUrl: string, supabaseKey: string): SupabaseClient<Database> {
+export function createTestClient(
+  supabaseUrl: string,
+  supabaseKey: string
+): SupabaseClient<Database> {
   return createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: false,
@@ -31,4 +34,4 @@ export function createMockSession(user = createMockUser()) {
     expires_at: Date.now() + 3600000,
     user,
   };
-} 
+}

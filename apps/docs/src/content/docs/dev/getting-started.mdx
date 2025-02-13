@@ -9,22 +9,60 @@ Before you begin, ensure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (version 18 or higher)
 - [pnpm](https://pnpm.io/) (version 8.15.4)
+- [Python](https://www.python.org/) (version 3.11 or higher)
+- [Poetry](https://python-poetry.org/) (version 1.7 or higher)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for Temporal)
 - Git
+
+For Mac users, you can install these prerequisites using Homebrew:
+
+```bash
+# Install Node.js and pnpm
+brew install node
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Install Python and Poetry
+brew install python@3.11
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install Docker Desktop
+brew install --cask docker
+```
 
 ## Setting Up Your Development Environment
 
 1. Clone the repository:
+
    ```bash
-   git clone https://github.com/yourusername/sfh.git
-   cd sfh
+   git clone https://github.com/javierhinojosa/scaffold.git
+   cd scaffold
    ```
 
-2. Install dependencies:
+2. Install Node.js dependencies:
+
    ```bash
    pnpm install
    ```
 
-3. Build all packages:
+3. Set up Python environments:
+
+   ```bash
+   # Set up CrewAI environment
+   cd apps/crewai
+   poetry install
+
+   # Set up Temporal worker environment
+   cd ../temporal
+   poetry install
+   ```
+
+4. Start Temporal server:
+
+   ```bash
+   docker compose up temporal -d
+   ```
+
+5. Build all packages:
    ```bash
    pnpm build
    ```
@@ -33,15 +71,22 @@ Before you begin, ensure you have the following installed:
 
 ### Running Applications
 
-To start any application in development mode:
+You can start applications individually or all at once using Turborepo:
 
 ```bash
+# Start all applications
+pnpm turbo dev
+
+# Start specific applications
 pnpm dev --filter <app-name>
 ```
 
 For example:
+
 - Admin dashboard: `pnpm dev --filter admin`
 - Documentation site: `pnpm dev --filter docs`
+- CrewAI service: `cd apps/crewai && poetry run python main.py`
+- Temporal workers: `cd apps/temporal && poetry run python worker.py`
 
 ### Running Tests
 
@@ -63,31 +108,230 @@ pnpm test:ui
 We maintain high code quality standards using various tools:
 
 ```bash
-# Format code
+# Format all supported files
 pnpm format
+
+# Format specific file types
+pnpm format:js    # Format JavaScript/TypeScript files
+pnpm format:py    # Format Python files
+pnpm format:misc  # Format other files (JSON, YAML, etc.)
 
 # Lint code
 pnpm lint
 ```
 
+Our formatting tools include:
+
+- Prettier for JavaScript, TypeScript, JSON, YAML, Markdown, and CSS files
+- Black for Python files
+- ESLint for JavaScript/TypeScript linting
+- Ruff for Python linting
+
+To customize formatting rules, check these configuration files:
+
+- `.prettierrc` - Prettier configuration
+- `pyproject.toml` - Python tools configuration (Black, Ruff)
+- `.eslintrc.js` - ESLint rules
+
+The format command will handle these file extensions:
+
+- `.js`, `.jsx`, `.ts`, `.tsx` (JavaScript/TypeScript)
+- `.svelte` (Svelte components)
+- `.astro` (Astro components)
+- `.css`, `.scss` (Stylesheets)
+- `.json`, `.yaml`, `.yml` (Configuration files)
+- `.md`, `.mdx` (Documentation)
+- `.py` (Python files)
+
 ## Project Structure
 
-### Applications (`apps/*`)
+Our monorepo is organized into two main directories: `apps` and `packages`. Each serves a specific purpose in our architecture:
 
-- `admin/` - Admin dashboard application
-  - Built with Astro
-  - Uses Tailwind CSS for styling
-  - Contains end-to-end tests using Playwright
+### Applications (`apps/`)
 
-- `docs/` - Documentation site (what you're reading now)
-  - Built with Astro and Starlight
-  - Contains project documentation and guides
+Our frontend and service applications live here, each with its own dedicated purpose:
 
-### Packages (`packages/*`)
+#### Frontend Applications
 
-- `testing/` - Shared testing utilities
-  - Common test setup and configurations
-  - Shared test helpers and fixtures
+🖥️ **Admin Dashboard** (`admin/`)
+```bash
+apps/admin/
+├── src/              # Application source code
+│   ├── components/   # Reusable UI components
+│   ├── layouts/      # Page layouts
+│   ├── lib/          # Utilities and helpers
+│   └── pages/        # Astro pages
+├── e2e/              # End-to-end tests
+└── public/           # Static assets
+```
+- Built with Astro and Svelte
+- Modern admin interface with DaisyUI
+- End-to-end testing with Playwright
+
+📚 **Documentation** (`docs/`)
+```bash
+apps/docs/
+├── src/
+│   ├── content/      # Documentation content (MDX)
+│   ├── components/   # Documentation components
+│   └── assets/       # Images and media
+└── public/           # Static assets
+```
+- Built with Astro and Starlight
+- Comprehensive project documentation
+- Interactive code examples
+
+#### Service Applications
+
+🤖 **CrewAI Service** (`crewai/`)
+```bash
+apps/crewai/
+├── src/              # AI service implementation
+├── tests/            # Unit and integration tests
+└── config/           # Service configuration
+```
+- Python-based AI automation
+- Integrates with LangChain and CrewAI
+- Requires OpenAI API key
+
+⚡ **Temporal Service** (`temporal/`)
+```bash
+apps/temporal/
+├── src/              # Workflow definitions
+├── workers/          # Temporal workers
+└── api/              # HTTP API endpoints
+```
+- Durable workflow orchestration
+- Python-based service
+- Requires local Temporal server
+
+### Shared Packages (`packages/`)
+
+Our reusable libraries and utilities are organized here:
+
+🧪 **Testing Utilities** (`testing/`)
+```bash
+packages/testing/
+├── src/
+│   ├── setup/       # Test setup utilities
+│   ├── fixtures/    # Common test fixtures
+│   └── helpers/     # Test helper functions
+└── config/          # Test configurations
+```
+- Common test configurations
+- Shared test helpers and fixtures
+- Integration with Vitest and Playwright
+
+🔧 **Backend Utilities** (`backend/`)
+```bash
+packages/backend/
+├── src/
+│   ├── auth/        # Authentication utilities
+│   ├── db/          # Database helpers
+│   └── api/         # API utilities
+└── config/          # Backend configurations
+```
+- Shared backend configurations
+- Common API utilities
+- Database helpers and types
+
+### Key Files
+
+Important configuration files at the root level:
+
+📄 **Configuration Files**
+```bash
+├── .env                 # Environment variables
+├── .prettierrc         # Code formatting rules
+├── .eslintrc          # Linting configuration
+├── tsconfig.json      # TypeScript configuration
+├── turbo.json         # Turborepo configuration
+└── pnpm-workspace.yaml # Workspace configuration
+```
+
+📦 **Package Management**
+```bash
+├── package.json       # Root package configuration
+└── pnpm-lock.yaml    # Dependency lock file
+```
+
+### Directory Structure Overview
+
+Here's a high-level view of the entire project structure:
+
+```bash
+scaffold/
+├── apps/              # Frontend and service applications
+│   ├── admin/         # Admin dashboard
+│   ├── docs/          # Documentation site
+│   ├── crewai/        # AI service
+│   └── temporal/      # Workflow service
+├── packages/          # Shared libraries
+│   ├── testing/       # Test utilities
+│   └── backend/       # Backend utilities
+├── scripts/           # Development scripts
+└── config files       # Root configuration
+```
+
+## Environment Setup
+
+1. Create a `.env` file in the root directory:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Configure the following environment variables:
+
+   ```env
+   # Supabase Configuration
+   SUPABASE_URL=YOUR_SUPABASE_URL                # Local Supabase instance URL
+   SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY      # Anonymous API key
+   SUPABASE_SERVICE_KEY=YOUR_SUPABASE_SERVICE_KEY # Service role API key
+
+   # Public Supabase Configuration (Used by frontend apps)
+   PUBLIC_SUPABASE_URL=YOUR_PUBLIC_SUPABASE_URL
+   PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_SUPABASE_ANON_KEY
+
+   # Documentation Configuration
+   ASTRO_DOCS_DIR=YOUR_ASTRO_DOCS_DIR            # Path to documentation content
+
+   # GitHub Configuration (For documentation and deployment)
+   GITHUB_REPO=your-username/your-repo           # Repository identifier
+   GITHUB_BRANCH=main                            # Branch to deploy from
+   GITHUB_TOKEN=your_github_personal_access_token # GitHub access token
+
+   # Application URLs
+   PUBLIC_ADMIN_URL=YOUR_PUBLIC_ADMIN_URL        # Admin dashboard URL
+   PUBLIC_WEBSITE_URL=YOUR_PUBLIC_WEBSITE_URL     # Main website URL
+
+   # AI Service Configuration
+   OPENAI_API_KEY=your_api_key_here              # Required for CrewAI service
+
+   # Temporal Configuration
+   TEMPORAL_HOST=localhost:7233                   # Local Temporal server
+   TEMPORAL_NAMESPACE=default                     # Temporal namespace
+   ```
+
+3. Default Development Values:
+   - Supabase runs locally at `http://localhost:54321`
+   - Admin dashboard runs at `http://localhost:4322`
+   - Main website runs at `http://localhost:4323`
+   - Documentation site runs at `http://localhost:4321`
+   - Temporal server runs at `localhost:7233`
+
+4. Required Services:
+   - Local Supabase instance (started via Docker)
+   - Local Temporal server (started via Docker)
+   - OpenAI API key (for AI features)
+   - GitHub token (for documentation features)
+
+:::tip[Environment Variables]
+For local development, you can use the default values for most services. However, you'll need to provide your own:
+- OpenAI API key for AI features
+- GitHub token for documentation features
+- Supabase keys if using a cloud instance
+:::
 
 ## Common Tasks
 
@@ -104,12 +348,3 @@ pnpm lint
 2. Initialize your application
 3. Add necessary configurations (TypeScript, ESLint, etc.)
 4. Update `turbo.json` if needed
-
-## Getting Help
-
-If you run into any issues:
-
-1. Check the existing documentation
-2. Look for similar issues in the GitHub repository
-3. Ask for help in our community channels
-4. Create a new issue if needed 

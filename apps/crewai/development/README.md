@@ -15,6 +15,7 @@ pip install uv
 Next, navigate to your project directory and install the dependencies:
 
 (Optional) Lock the dependencies and install them by using the CLI command:
+
 ```bash
 crewai install
 ```
@@ -26,8 +27,9 @@ crewai install
 The Development Crew consists of two specialized agents:
 
 1. **Repository Structure Documentation Specialist**
+
    - Role: Creates comprehensive repository structure overviews
-   - Tools: 
+   - Tools:
      - Generate file tree (up to 5 levels deep)
      - List directory contents
      - Read file contents
@@ -46,6 +48,7 @@ The Development Crew consists of two specialized agents:
 The crew performs two main tasks:
 
 1. **Sitemap Generation**
+
    - Creates a comprehensive repository overview
    - Outputs: `docs/sitemap.md`
    - Deliverables:
@@ -73,6 +76,7 @@ $ crewai run
 ```
 
 This will:
+
 1. Generate a comprehensive sitemap of your repository
 2. Analyze existing documentation and identify gaps
 3. Create two output files in the `docs/` directory
@@ -88,6 +92,7 @@ The crew's behavior can be customized through:
 ## Support
 
 For support, questions, or feedback:
+
 - Visit our [documentation](https://docs.crewai.com)
 - Reach out through our [GitHub repository](https://github.com/joaomdmoura/crewai)
 - [Join our Discord](https://discord.com/invite/X4JWnZnxPb)

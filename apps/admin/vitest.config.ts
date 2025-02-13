@@ -18,10 +18,10 @@ export default defineConfig(async () => {
       deps: {
         optimizer: {
           web: {
-            include: [/@sfh\/testing/, /astro/]
-          }
-        }
-      }
+            include: [/@sfh\/testing/, /astro/],
+          },
+        },
+      },
     },
   };
-}); 
+});

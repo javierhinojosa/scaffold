@@ -14,14 +14,16 @@ export function initAuthCheck(currentPath: string) {
   const loadingEl = document.getElementById('loading');
   const contentEl = document.getElementById('content');
 
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => currentPath.startsWith(route));
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => currentPath.startsWith(route));
   const isLoginPage = currentPath === '/login';
 
   // Initialize auth session
   const initSession = async () => {
     try {
-      const { data: { session } } = await auth.client.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await auth.client.auth.getSession();
+
       if (!session && isProtectedRoute) {
         window.location.href = '/login';
         return;
@@ -59,4 +61,4 @@ export function initAuthCheck(currentPath: string) {
       }
     }
   });
-} 
+}

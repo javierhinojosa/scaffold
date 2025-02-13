@@ -33,7 +33,10 @@ var Auth = class {
     if (error) throw error;
   }
   async getCurrentUser() {
-    const { data: { user }, error } = await this.supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error
+    } = await this.supabaseClient.auth.getUser();
     if (error) throw error;
     return user;
   }
@@ -50,7 +53,9 @@ function createSvelteAuthStore(options) {
   });
   async function init() {
     try {
-      const { data: { session } } = await options.auth.client.auth.getSession();
+      const {
+        data: { session }
+      } = await options.auth.client.auth.getSession();
       store.set({ user: session?.user ?? null, loading: false });
       options.auth.onAuthStateChange((user) => {
         store.set({ user, loading: false });

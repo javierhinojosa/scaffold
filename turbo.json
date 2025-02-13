@@ -16,7 +16,7 @@
     "dev": {
       "cache": false,
       "persistent": true
-    }, 
+    },
     "test": {
       "dependsOn": ["^build"],
       "inputs": [
@@ -25,10 +25,7 @@
         "vitest.config.{js,ts}",
         "tsconfig.json"
       ],
-      "outputs": [
-        "coverage/**",
-        "test-results/**"
-      ]
+      "outputs": ["coverage/**", "test-results/**"]
     },
     "test:unit": {
       "dependsOn": ["^build"],
@@ -50,15 +47,8 @@
     },
     "test:e2e": {
       "dependsOn": ["^build"],
-      "inputs": [
-        "src/**/*.{astro,svelte,ts,tsx}",
-        "e2e/**/*.ts",
-        "playwright.config.{js,ts}"
-      ],
-      "outputs": [
-        "playwright-report/**",
-        "test-results/**"
-      ]
+      "inputs": ["src/**/*.{astro,svelte,ts,tsx}", "e2e/**/*.ts", "playwright.config.{js,ts}"],
+      "outputs": ["playwright-report/**", "test-results/**"]
     },
     "test:watch": {
       "cache": false,
@@ -73,16 +63,9 @@
         "vitest.config.{js,ts}",
         "playwright.config.{js,ts}"
       ],
-      "outputs": [
-        "coverage/**",
-        "playwright-report/**",
-        "test-results/**"
-      ],
+      "outputs": ["coverage/**", "playwright-report/**", "test-results/**"],
       "env": ["CI"]
     }
   },
-  "globalDependencies": [
-    "tsconfig.json",
-    ".env*"
-  ]
+  "globalDependencies": ["tsconfig.json", ".env*"]
 }

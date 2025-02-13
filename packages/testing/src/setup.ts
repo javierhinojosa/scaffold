@@ -12,4 +12,4 @@ afterEach(() => {
 
 export default {};
 
-// Add any global test setup here 
+// Add any global test setup here

@@ -35,6 +35,7 @@ export function createSupabaseClient(supabaseUrl: string, supabaseKey: string) {
 To use Supabase in any of our applications:
 
 1. Import the client creator:
+
 ```typescript
 import { createSupabaseClient } from '@sfh/backend';
 
@@ -45,10 +46,9 @@ export const supabase = createSupabaseClient(
 ```
 
 2. Use the typed client for database operations:
+
 ```typescript
-const { data, error } = await supabase
-  .from('users')
-  .select(`
+const { data, error } = await supabase.from('users').select(`
     id,
     email,
     profiles (
@@ -68,6 +68,7 @@ PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 ```
 
 For secure operations (like admin functions), we also use:
+
 ```bash
 SUPABASE_SERVICE_KEY="your-service-key"
 ```
@@ -151,6 +152,7 @@ create policy "Profiles are updatable by owner"
 When making schema changes:
 
 1. Generate a new migration file:
+
 ```bash
 supabase migration new your_migration_name
 ```
@@ -168,21 +170,25 @@ supabase migration new your_migration_name
 To apply schema changes to your local Supabase instance:
 
 1. Start your local Supabase instance:
+
 ```bash
 supabase start
 ```
 
 2. Reset the database and apply migrations:
+
 ```bash
 supabase db reset
 ```
 
 This command will:
+
 - Drop all existing tables
 - Apply all migrations in sequence
 - Seed any test data if configured
 
 For incremental changes during development, you can also use the Supabase Studio UI at `http://localhost:54323` to:
+
 - Execute SQL commands directly
 - View and modify data
 - Test RLS policies
@@ -193,11 +199,13 @@ For incremental changes during development, you can also use the Supabase Studio
 For staging and production environments:
 
 1. Connect to the remote project:
+
 ```bash
 supabase link --project-ref your-project-ref
 ```
 
 2. Push migrations:
+
 ```bash
 supabase db push
 ```
@@ -243,7 +251,9 @@ const { data, error } = await supabase.auth.signInWithPassword({
 });
 
 // Get authenticated user
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 
 // Sign out
 await supabase.auth.signOut();
@@ -254,13 +264,9 @@ await supabase.auth.signOut();
 ```typescript
 const channel = supabase
   .channel('table_changes')
-  .on(
-    'postgres_changes',
-    { event: '*', schema: 'public', table: 'messages' },
-    (payload) => {
-      // Handle real-time updates
-    }
-  )
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+    // Handle real-time updates
+  })
   .subscribe();
 ```
 
@@ -274,4 +280,4 @@ For detailed information about our authentication implementation using Supabase 
 - Always implement RLS policies before exposing tables
 - Use service role only in secure server contexts
 - Regularly audit RLS policies and access patterns
-- Keep Supabase project URL and keys in environment variables 
+- Keep Supabase project URL and keys in environment variables

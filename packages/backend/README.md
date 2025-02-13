@@ -22,10 +22,7 @@ Since this is a workspace package, you can add it to your project's dependencies
 import { createSupabaseClient } from '@sfh/supabase';
 
 // Initialize the client (do this once, typically at app startup)
-const supabase = createSupabaseClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
+const supabase = createSupabaseClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
 ```
 
 2. Then use the client throughout your application:
@@ -37,9 +34,7 @@ import { getSupabaseClient } from '@sfh/supabase';
 const supabase = getSupabaseClient();
 
 // Use it for queries, auth, etc.
-const { data, error } = await supabase
-  .from('your_table')
-  .select('*');
+const { data, error } = await supabase.from('your_table').select('*');
 ```
 
 ## Type Safety
@@ -55,4 +50,4 @@ To get full type safety for your database schema:
 Make sure to set these environment variables in your applications:
 
 - `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_ANON_KEY`: Your Supabase anonymous key 
+- `SUPABASE_ANON_KEY`: Your Supabase anonymous key

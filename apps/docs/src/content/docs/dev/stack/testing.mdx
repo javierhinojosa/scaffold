@@ -101,7 +101,7 @@ describe('Button', () => {
   it('calls onClick when clicked', async () => {
     const onClick = vi.fn();
     const { getByRole } = render(Button, { onClick });
-    
+
     await fireEvent.click(getByRole('button'));
     expect(onClick).toHaveBeenCalled();
   });
@@ -159,7 +159,7 @@ test('user can login', async ({ page }) => {
   await page.fill('[name="email"]', 'user@example.com');
   await page.fill('[name="password"]', 'password');
   await page.click('button[type="submit"]');
-  
+
   await expect(page).toHaveURL('/dashboard');
 });
 ```
@@ -217,21 +217,23 @@ src/
 ### Testing Guidelines
 
 1. **Test Coverage**
+
    - Aim for 80% coverage on business logic
    - Focus on critical user paths
    - Test edge cases and error handling
 
 2. **Test Structure**
+
    ```ts
    describe('Component/Feature', () => {
      beforeEach(() => {
        // Setup
      });
-     
+
      it('should do something specific', () => {
        // Test
      });
-     
+
      afterEach(() => {
        // Cleanup
      });
@@ -252,7 +254,7 @@ src/
 ```ts
 test('loads data', async () => {
   const { getByText } = render(DataLoader);
-  
+
   expect(getByText('Loading...')).toBeInTheDocument();
   await waitForElementToBeRemoved(() => getByText('Loading...'));
   expect(getByText('Data loaded!')).toBeInTheDocument();
@@ -268,7 +270,7 @@ test('handles errors', async () => {
       return res(ctx.status(500));
     })
   );
-  
+
   const { getByText } = render(DataLoader);
   await waitFor(() => {
     expect(getByText('Error loading data')).toBeInTheDocument();
@@ -300,4 +302,4 @@ pnpm test:e2e:ui
 - [Vitest Documentation](https://vitest.dev)
 - [Testing Library](https://testing-library.com)
 - [Playwright Documentation](https://playwright.dev)
-- [Jest DOM Matchers](https://github.com/testing-library/jest-dom) 
+- [Jest DOM Matchers](https://github.com/testing-library/jest-dom)

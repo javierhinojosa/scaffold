@@ -7,17 +7,22 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yaml,yml,css,scss,astro,svelte}\" && pnpm format:py",
+    "format:js": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
+    "format:py": "black apps/crewai/**/*.py apps/temporal/**/*.py",
+    "format:misc": "prettier --write \"**/*.{json,yaml,yml,md,mdx,css,scss,astro,svelte}\""
   },
   "devDependencies": {
     "@types/node": "^22.13.1",
     "prettier": "^3.5.0",
+    "prettier-plugin-astro": "^0.13.0",
+    "prettier-plugin-svelte": "^3.1.2",
     "turbo": "^2.4.1",
     "typescript": "5.7.3"
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {
-    "node": ">=18"
+    "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

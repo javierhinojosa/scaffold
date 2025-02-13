@@ -15,10 +15,10 @@ The documentation site is configured in `apps/docs/astro.config.mjs`. Here are t
 
 ```js
 import starlight from '@astrojs/starlight';
-import starlightSidebarTopicsDropdown from 'starlight-sidebar-topics-dropdown'
-import starlightLinksValidator from 'starlight-links-validator'
-import starlightGiscus from 'starlight-giscus'
-import rehypeMermaid from "rehype-mermaid";
+import starlightSidebarTopicsDropdown from 'starlight-sidebar-topics-dropdown';
+import starlightLinksValidator from 'starlight-links-validator';
+import starlightGiscus from 'starlight-giscus';
+import rehypeMermaid from 'rehype-mermaid';
 
 export default defineConfig({
   integrations: [
@@ -42,6 +42,7 @@ export default defineConfig({
 The documentation site includes several powerful plugins:
 
 #### 1. Topics Dropdown Navigation
+
 Using `starlight-sidebar-topics-dropdown`, the sidebar is organized into collapsible topic sections. Configure topics in `astro.config.mjs`:
 
 ```js
@@ -59,6 +60,7 @@ starlightSidebarTopicsDropdown([
 ```
 
 #### 2. Comments Integration
+
 [Giscus](https://giscus.app/) provides GitHub-powered comments. Configure it in your config:
 
 ```js
@@ -66,14 +68,16 @@ starlightGiscus({
   repo: 'yourusername/scaffold',
   repoId: 'your-repo-id',
   category: 'Announcements',
-  categoryId: 'your-category-id'
-})
+  categoryId: 'your-category-id',
+});
 ```
 
 #### 3. Link Validation
+
 The `starlight-links-validator` plugin automatically checks for broken links during build time.
 
 #### 4. Diagrams Support
+
 [Mermaid](https://mermaid.js.org/) diagrams are supported through `rehype-mermaid`:
 
 ```js
@@ -118,6 +122,7 @@ You can use Astro components in `.mdx` files:
 ---
 title: Page with Components
 ---
+
 import { MyComponent } from '@/components/MyComponent';
 
 <MyComponent prop="value" />
@@ -143,7 +148,7 @@ sidebar: [
       // Add more items
     ],
   },
-]
+];
 ```
 
 ## Deployment
@@ -165,4 +170,4 @@ export default defineConfig({
 2. **Images**: Store images in `src/assets/` and reference them using relative paths
 3. **Components**: Create reusable components for common documentation patterns
 4. **Versioning**: Consider using git tags to version your documentation
-5. **Search**: Write clear, searchable content with good headings and keywords 
+5. **Search**: Write clear, searchable content with good headings and keywords

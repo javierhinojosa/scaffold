@@ -2,19 +2,18 @@
 title: Scaffold Monorepo Documentation
 description: A comprehensive template monorepo combining powerful tools to meet any organization's development needs
 suggestions:
-  - text: "Add a section about deployment strategies and CI/CD pipeline setup"
-    author: "DevOps Team"
-    date: "Jan 25, 2024"
-  - text: "Include more code examples for common integration patterns"
-    author: "Developer Experience Team"
-    date: "Jan 28, 2024"
-  - text: "Consider adding troubleshooting guides for common issues"
-    author: "Support Team"
-    date: "Jan 30, 2024"
+  - text: 'Add a section about deployment strategies and CI/CD pipeline setup'
+    author: 'DevOps Team'
+    date: 'Jan 25, 2024'
+  - text: 'Include more code examples for common integration patterns'
+    author: 'Developer Experience Team'
+    date: 'Jan 28, 2024'
+  - text: 'Consider adding troubleshooting guides for common issues'
+    author: 'Support Team'
+    date: 'Jan 30, 2024'
 ---
 
 import { FileTree } from '@astrojs/starlight/components';
-
 
 ## Welcome to Scaffold
 
@@ -25,13 +24,14 @@ Scaffold is a carefully crafted template monorepo that combines modern developme
 The monorepo demonstrates a scalable organization pattern with:
 
 <FileTree>
-- apps/ - Frontend astro applications 
-  - admin/ - Modern admin dashboard application
-  - docs/ - Documentation site with best practices
-  - crewai/ - AI-powered automation and workflows
-- packages/ - Shared libraries and utilities
-  - testing/ - Common testing utilities and configurations
-  - backend/ - Shared backend utilities and configurations
+  - apps/ - Frontend astro applications 
+    - admin/ - Modern admin dashboard application 
+    - docs/ - Documentation site with best practices 
+    - crewai/ - AI-powered automation and workflows 
+    - temporal/ - Workflow orchestration and state management 
+  - packages/ - Shared libraries and utilities
+    - testing/ - Common testing utilities and configurations 
+    - backend/ - Shared backend utilities and configurations
 </FileTree>
 
 ### Key Features
@@ -41,6 +41,7 @@ The monorepo demonstrates a scalable organization pattern with:
 - **TypeScript** for type-safe development across all projects
 - **Comprehensive testing** infrastructure with Vitest and Playwright
 - **AI Integration** capabilities through CrewAI
+- **Workflow Orchestration** with Temporal for reliable, scalable workflows
 - **Modern tooling** including ESLint, Prettier, and automated workflows
 - **Documentation** infrastructure for maintaining clear project knowledge
 
@@ -60,15 +61,14 @@ Check out our [Getting Started guide](/dev/getting-started/) to set up your deve
 - Vitest for testing
 - Supabase for database
 - CrewAI for AI integration
+- Temporal for workflow orchestration
 - Langfuse for monitoring and observability
 - Giscus for comments
 - Vercel for deployment
 
-
 ### About This Documentation
 
 This documentation site is built using [Starlight](https://starlight.astro.build/), a powerful documentation framework powered by Astro. It showcases how to build a modern, performant documentation site with features like:
-
 
 - 📱 Fully responsive design
 - 🔍 Full-text search

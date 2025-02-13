@@ -57,7 +57,7 @@ We use Svelte's new Runes for state management:
 <!-- components/Counter.svelte -->
 <script>
   let count = $state(0);
-  
+
   function increment() {
     count++;
   }
@@ -83,7 +83,7 @@ export const theme = writable('light');
 <!-- components/ThemeToggle.svelte -->
 <script>
   import { theme } from '../stores/theme';
-  
+
   function toggleTheme() {
     $theme = $theme === 'light' ? 'dark' : 'light';
   }
@@ -108,9 +108,9 @@ We enforce strict typing in our Svelte components:
   }
 
   let { userId, name, email } = $props<Props>();
-  
+
   let userDetails = $state<UserDetails | null>(null);
-  
+
   async function loadUserDetails() {
     userDetails = await fetchUserDetails(userId);
   }
@@ -125,13 +125,13 @@ We use typed events for component communication:
 <!-- components/SearchInput.svelte -->
 <script lang="ts">
   import type { SearchEvent } from '../types';
-  
+
   const dispatch = createEventDispatcher<{
     search: SearchEvent;
   }>();
-  
+
   let query = $state('');
-  
+
   function handleSubmit() {
     dispatch('search', { query });
   }
@@ -150,7 +150,7 @@ import Counter from './Counter.svelte';
 test('increments count when clicked', async () => {
   const { getByText } = render(Counter);
   const button = getByText('Count: 0');
-  
+
   await fireEvent.click(button);
   expect(getByText('Count: 1')).toBeInTheDocument();
 });
@@ -161,11 +161,13 @@ test('increments count when clicked', async () => {
 ### Performance Guidelines
 
 1. **Lazy Loading**
+
    - Use `client:visible` for below-the-fold components
    - Split large components into smaller chunks
    - Use dynamic imports for heavy features
 
 2. **State Management**
+
    - Use local state when possible
    - Share state through stores only when necessary
    - Consider using derived stores for computed values
@@ -182,18 +184,18 @@ test('increments count when clicked', async () => {
 <script lang="ts">
   // 1. Imports
   import { onMount } from 'svelte';
-  
+
   // 2. Props
   let { title } = $props<{ title: string }>();
-  
+
   // 3. State
   let isLoading = $state(false);
-  
+
   // 4. Lifecycle
   onMount(() => {
     // Setup
   });
-  
+
   // 5. Methods
   function handleClick() {
     // Event handling
@@ -220,11 +222,13 @@ test('increments count when clicked', async () => {
 ## Common Gotchas
 
 1. **SSR Considerations**
+
    - Avoid `window` in component initialization
    - Handle hydration mismatches
    - Use `onMount` for browser-only code
 
 2. **TypeScript Integration**
+
    - Always use `lang="ts"` in components
    - Define prop interfaces
    - Type event dispatchers
@@ -239,4 +243,4 @@ test('increments count when clicked', async () => {
 - [Svelte Documentation](https://svelte.dev/docs)
 - [Svelte Kit Documentation](https://kit.svelte.dev/docs)
 - [Astro + Svelte Integration](https://docs.astro.build/en/guides/integrations-guide/svelte/)
-- [Testing Library Svelte](https://testing-library.com/docs/svelte-testing-library/intro/) 
+- [Testing Library Svelte](https://testing-library.com/docs/svelte-testing-library/intro/)

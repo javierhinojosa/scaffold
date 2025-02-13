@@ -6,6 +6,7 @@ description: Our approach to styling applications using Tailwind CSS and DaisyUI
 ## Styling Stack
 
 Our styling approach combines two powerful tools:
+
 - [Tailwind CSS](https://tailwindcss.com) for utility-first styling
 - [DaisyUI](https://daisyui.com) for pre-built component classes
 
@@ -19,17 +20,13 @@ Each application includes the following setup:
 // tailwind.config.mjs
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './src/**/*.{astro,html,js,jsx,svelte,ts,tsx,vue}',
-  ],
+  content: ['./src/**/*.{astro,html,js,jsx,svelte,ts,tsx,vue}'],
   theme: {
     extend: {
       // Custom theme extensions
     },
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require('daisyui')],
 };
 ```
 
@@ -54,11 +51,13 @@ export default defineConfig({
 ### Core Principles
 
 1. **Utility-First**
+
    - Use utility classes for styling
    - Avoid custom CSS when possible
    - Leverage Tailwind's design system
 
 2. **Responsive Design**
+
    ```html
    <div class="w-full md:w-1/2 lg:w-1/3">
      <!-- Responsive content -->
@@ -67,9 +66,7 @@ export default defineConfig({
 
 3. **State Variants**
    ```html
-   <button class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700">
-     Click me
-   </button>
+   <button class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700">Click me</button>
    ```
 
 ### Custom Theme
@@ -100,6 +97,7 @@ export default {
 ### Common Patterns
 
 1. **Layout Components**
+
    ```astro
    <div class="container mx-auto px-4 py-8">
      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,6 +107,7 @@ export default {
    ```
 
 2. **Card Patterns**
+
    ```astro
    <div class="rounded-lg shadow-md bg-white p-6">
      <h2 class="text-xl font-semibold mb-4">Title</h2>
@@ -155,12 +154,14 @@ export default {
 ### Component Usage
 
 1. **Buttons**
+
    ```html
    <button class="btn btn-primary">Primary</button>
    <button class="btn btn-secondary btn-outline">Secondary</button>
    ```
 
 2. **Forms**
+
    ```html
    <div class="form-control">
      <label class="label">
@@ -188,6 +189,7 @@ export default {
 ### Organization
 
 1. **Component-Specific Styles**
+
    ```svelte
    <!-- Button.svelte -->
    <button class="btn {variant} {$$props.class}">
@@ -196,12 +198,13 @@ export default {
    ```
 
 2. **Global Styles**
+
    ```css
    /* src/styles/global.css */
    @tailwind base;
    @tailwind components;
    @tailwind utilities;
-   
+
    @layer base {
      /* Base styles */
    }
@@ -210,6 +213,7 @@ export default {
 ### Performance
 
 1. **Purging Unused Styles**
+
    - Configure content paths correctly
    - Include dynamic class patterns
    - Monitor bundle size
@@ -226,6 +230,7 @@ export default {
 ### Maintainability
 
 1. **Extract Components**
+
    - Create reusable UI components
    - Use consistent class patterns
    - Document component variants
@@ -261,9 +266,7 @@ export default {
 ### Animation
 
 ```html
-<button class="transition-all hover:scale-105 active:scale-95">
-  Animated Button
-</button>
+<button class="transition-all hover:scale-105 active:scale-95">Animated Button</button>
 ```
 
 ## Resources
@@ -271,4 +274,4 @@ export default {
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [DaisyUI Components](https://daisyui.com/components)
 - [Tailwind CSS Cheat Sheet](https://nerdcave.com/tailwind-cheat-sheet)
-- [Astro Tailwind Integration](https://docs.astro.build/en/guides/integrations-guide/tailwind/) 
+- [Astro Tailwind Integration](https://docs.astro.build/en/guides/integrations-guide/tailwind/)

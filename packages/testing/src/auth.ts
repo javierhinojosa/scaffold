@@ -5,7 +5,10 @@ import type { Database } from '@sfh/backend';
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
 
-export const testClient: SupabaseClient<Database> = createTestClient(supabaseUrl, supabaseServiceKey);
+export const testClient: SupabaseClient<Database> = createTestClient(
+  supabaseUrl,
+  supabaseServiceKey
+);
 
 export const TEST_USER = {
   email: 'javiereh@pm.me',
@@ -32,9 +35,11 @@ export async function setupTestUser() {
 }
 
 export async function cleanupTestUser() {
-  const { data: { users } } = await testClient.auth.admin.listUsers();
+  const {
+    data: { users },
+  } = await testClient.auth.admin.listUsers();
   const testUser = users.find((u: User) => u.email === TEST_USER.email);
   if (testUser) {
     await testClient.auth.admin.deleteUser(testUser.id);
   }
-} 
+}

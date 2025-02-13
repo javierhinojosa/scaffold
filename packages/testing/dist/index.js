@@ -3,7 +3,7 @@ import {
   cleanupTestUser,
   setupTestUser,
   testClient
-} from "./chunk-4TL4KFI2.js";
+} from "./chunk-BWJAMBGD.js";
 import {
   setup_default
 } from "./chunk-IOYBGPLX.js";

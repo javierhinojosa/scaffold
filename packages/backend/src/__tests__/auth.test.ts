@@ -27,9 +27,7 @@ describe('Auth', () => {
   });
 
   it('should fail to sign in with incorrect password', async () => {
-    await expect(
-      auth.signInWithEmail(TEST_USER.email, 'wrongpassword')
-    ).rejects.toThrow();
+    await expect(auth.signInWithEmail(TEST_USER.email, 'wrongpassword')).rejects.toThrow();
   });
 
   it('should sign up a new user', async () => {
@@ -38,8 +36,10 @@ describe('Auth', () => {
 
     try {
       // First cleanup any existing test user
-      const { data: { users } } = await auth.client.auth.admin.listUsers();
-      const existingUser = users.find(u => u.email === testEmail);
+      const {
+        data: { users },
+      } = await auth.client.auth.admin.listUsers();
+      const existingUser = users.find((u) => u.email === testEmail);
       if (existingUser) {
         await auth.client.auth.admin.deleteUser(existingUser.id);
       }
@@ -50,8 +50,10 @@ describe('Auth', () => {
       expect(user?.email).toBe(testEmail);
     } finally {
       // Clean up the test user
-      const { data: { users } } = await auth.client.auth.admin.listUsers();
-      const testUser = users.find(u => u.email === testEmail);
+      const {
+        data: { users },
+      } = await auth.client.auth.admin.listUsers();
+      const testUser = users.find((u) => u.email === testEmail);
       if (testUser) {
         await auth.client.auth.admin.deleteUser(testUser.id);
       }
@@ -60,25 +62,30 @@ describe('Auth', () => {
 
   it('should sign out successfully', async () => {
     // First sign in and get the session
-    const { data: { session }, error } = await auth.client.auth.signInWithPassword({
+    const {
+      data: { session },
+      error,
+    } = await auth.client.auth.signInWithPassword({
       email: TEST_USER.email,
       password: TEST_USER.password,
     });
     expect(error).toBeNull();
     expect(session).toBeDefined();
-    
+
     // Then sign out
     await auth.signOut();
-    
+
     // Verify session is cleared
-    const { data: { session: currentSession } } = await auth.client.auth.getSession();
+    const {
+      data: { session: currentSession },
+    } = await auth.client.auth.getSession();
     expect(currentSession).toBeNull();
   });
 
   it('should get current user after login', async () => {
     // Sign in
     await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-    
+
     // Get current user
     const user = await auth.getCurrentUser();
     expect(user).toBeDefined();
@@ -87,24 +94,26 @@ describe('Auth', () => {
 
   it('should handle auth state changes', async () => {
     let authStateUser: any = null;
-    
+
     // Set up auth state listener
-    const { data: { subscription } } = auth.client.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = auth.client.auth.onAuthStateChange((_event, session) => {
       authStateUser = session?.user ?? null;
     });
 
     try {
       // Sign in and verify state change
       await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for state update
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for state update
       expect(authStateUser?.email).toBe(TEST_USER.email);
 
       // Sign out and verify state change
       await auth.signOut();
-      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for state update
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for state update
       expect(authStateUser).toBeNull();
     } finally {
       subscription.unsubscribe();
     }
   });
-}); 
+});

@@ -28,16 +28,19 @@ We follow a modified GitFlow workflow with the following branch structure:
 ## Workflow Guidelines
 
 1. **Starting New Work**
+
    - Create branches from `develop` for new features
    - Use meaningful branch names that describe the work
    - One feature/task per branch
 
 2. **Commits**
+
    - Write clear, descriptive commit messages
    - Use present tense ("Add feature" not "Added feature")
    - Reference issue numbers when applicable
 
 3. **Pull Requests**
+
    - Create detailed PR descriptions
    - Include testing steps and screenshots if relevant
    - Request reviews from appropriate team members
@@ -53,20 +56,24 @@ We follow a modified GitFlow workflow with the following branch structure:
 We maintain a comprehensive `.gitignore` file to exclude unnecessary files from version control. Key ignored items include:
 
 ### Development
+
 - Dependencies (`node_modules/`, `venv/`, `.pnp`)
 - Build outputs (`dist/`, `build/`, `.next/`, `.astro/`)
 - Environment files (`.env*`)
 - Debug logs (`*.log`)
 
 ### IDEs and Editors
+
 - IDE configurations (`.vscode/`, `.idea/`)
 - Editor-specific files (`*.iml`, `.history/`)
 
 ### Operating System
+
 - System files (`.DS_Store`)
 - Temporary files
 
 ### Application-Specific
+
 - Admin app build artifacts
 - Docs app build artifacts
 - CrewAI environment files
@@ -75,16 +82,19 @@ We maintain a comprehensive `.gitignore` file to exclude unnecessary files from 
 ## Best Practices
 
 1. **Keep Branches Updated**
+
    ```bash
    git fetch origin
    git rebase origin/develop
    ```
 
 2. **Clean History**
+
    - Rebase feature branches before merging
    - Use interactive rebase to clean up commits
 
 3. **Protected Branches**
+
    - `main` and `develop` are protected
    - Require pull request reviews
    - Enforce status checks
@@ -114,4 +124,4 @@ New team members should:
 5. Address review comments
 6. Squash and merge when approved
 
-Remember to keep your local repository updated and regularly sync with the remote repository. 
+Remember to keep your local repository updated and regularly sync with the remote repository.

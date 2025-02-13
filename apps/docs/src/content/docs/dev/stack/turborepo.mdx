@@ -21,24 +21,35 @@ Our root `turbo.json` defines the core pipeline and task configurations:
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env"],
-  "pipeline": {
+  "ui": "tui",
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "test": {
-      "dependsOn": ["^build"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "!dist/cache/**"]
     },
     "lint": {
-      "outputs": []
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{astro,svelte,ts,tsx}",
+        "tests/**/*.{ts,tsx}",
+        "vitest.config.{js,ts}",
+        "tsconfig.json"
+      ],
+      "outputs": ["coverage/**", "test-results/**"]
     }
-  }
+  },
+  "globalDependencies": ["tsconfig.json", ".env*"]
 }
 ```
 
@@ -62,187 +73,134 @@ packages:
    ```
    - Builds all packages and applications
    - Respects dependencies between packages
-   - Caches build outputs for faster subsequent builds
+   - Uses `$TURBO_DEFAULT$` and `.env*` files as inputs
+   - Outputs to `dist/**` (excluding cache)
 
 2. **Development**
    ```bash
    pnpm dev --filter <app-name>
    ```
    - Starts development server for specific application
+   - Runs in persistent mode with caching disabled
    - Watches for changes in dependencies
-   - No caching for development tasks
 
 3. **Testing**
    ```bash
    pnpm test
    ```
    - Runs tests across all packages
-   - Caches test results when possible
    - Depends on build task completion
+   - Handles various test types (unit, integration, e2e)
+   - Outputs to `coverage/**` and `test-results/**`
 
-4. **Linting**
+4. **Type Checking**
+   ```bash
+   pnpm check-types
+   ```
+   - Runs TypeScript type checking across packages
+   - Ensures type safety across the monorepo
+
+5. **Linting**
    ```bash
    pnpm lint
    ```
    - Runs linting across all packages
-   - Quick execution with caching
+   - Respects dependencies between packages
 
-### Task Dependencies
+### Testing Configuration
 
-Our pipeline ensures tasks run in the correct order:
+Our setup includes specialized test tasks:
 
-```mermaid
-graph TD
-    A[Install Dependencies] --> B[Build Packages]
-    B --> C[Run Tests]
-    B --> D[Start Development]
-    B --> E[Build Apps]
-```
-
-## Development Workflow
-
-### Running Tasks
-
-1. **Building Specific Packages**
+1. **Unit Tests**
    ```bash
-   pnpm build --filter @sfh/backend
+   pnpm test:unit
    ```
+   - Focuses on unit tests in `tests/unit`
+   - Uses Vitest for test execution
+   - Outputs coverage reports
 
-2. **Development Mode**
+2. **Integration Tests**
+   ```bash
+   pnpm test:integration
+   ```
+   - Runs integration tests from `tests/integration`
+   - Depends on build completion
+   - Generates coverage reports
+
+3. **E2E Tests**
+   ```bash
+   pnpm test:e2e
+   ```
+   - Executes end-to-end tests using Playwright
+   - Tests from `e2e` directory
+   - Generates Playwright reports
+
+4. **CI Testing**
+   ```bash
+   pnpm test:ci
+   ```
+   - Comprehensive test suite for CI environments
+   - Runs all test types
+   - Includes additional CI-specific configurations
+
+### Development Workflow
+
+1. **Running Tasks**
    ```bash
    # Start specific app
    pnpm dev --filter admin
-   
-   # Start multiple apps
-   pnpm dev --filter admin --filter docs
+
+   # Build specific package
+   pnpm build --filter @sfh/package-name
+
+   # Run tests for specific app
+   pnpm test --filter app-name
    ```
 
-3. **Testing**
+2. **Formatting**
    ```bash
-   # Test specific package
-   pnpm test --filter @sfh/testing
-   
-   # Test with dependencies
-   pnpm test --filter @sfh/admin...
+   # Format all files
+   pnpm format
+
+   # Format specific file types
+   pnpm format:js    # JavaScript/TypeScript files
+   pnpm format:py    # Python files
+   pnpm format:misc  # Other file types
    ```
-
-### Cache Management
-
-1. **Local Cache**
-   - Located in `.turbo` directory
-   - Automatically manages task outputs
-   - Can be safely deleted to clear cache
-
-2. **Remote Cache**
-   - Configured for Vercel deployment
-   - Shares cache across team members
-   - Speeds up CI/CD pipelines
-
-### Filtering
-
-We use Turborepo's powerful filtering syntax:
-
-```bash
-# Single workspace
-pnpm <task> --filter <workspace>
-
-# Workspace and dependencies
-pnpm <task> --filter <workspace>...
-
-# Workspace and dependents
-pnpm <task> --filter ...<workspace>
-
-# Since last change
-pnpm <task> --since=origin/main
-```
 
 ## Best Practices
 
-### Pipeline Configuration
+### Task Configuration
 
-1. **Task Dependencies**
-   - Use `dependsOn` to define prerequisites
-   - Include `^build` for tasks requiring built packages
-   - Mark development tasks as `persistent`
+1. **Input/Output Management**
+   - Define specific input patterns for accurate caching
+   - Exclude cache directories from outputs
+   - Include environment files in global dependencies
 
-2. **Output Caching**
-   - Define `outputs` for cacheable tasks
-   - Use `cache: false` for watch mode tasks
-   - Include all generated files in outputs
-
-3. **Task Inputs**
-   - Specify `inputs` to track relevant files
-   - Include test files for test tasks
-   - Include configuration files when needed
+2. **Task Dependencies**
+   - Use `dependsOn` to establish correct build order
+   - Ensure type checking and linting run independently
+   - Configure persistent tasks for development
 
 ### Workspace Organization
 
 1. **Package Structure**
-   - Keep related code in same workspace
+   - Organize code in `apps/*` and `packages/*`
    - Share common code through packages
-   - Minimize cross-workspace dependencies
+   - Maintain clear dependency boundaries
 
 2. **Dependencies**
-   - Use workspace protocol for local dependencies
-   - Keep shared dependencies at root
-   - Version lock important packages
+   - Use PNPM as package manager
+   - Support Node.js versions 18, 20, and 22+
+   - Lock specific built dependencies (e.g., esbuild)
 
-### Performance Tips
 
-1. **Cache Optimization**
-   - Regular cache pruning
-   - Precise output definitions
-   - Minimal global dependencies
+## Related Files
 
-2. **Task Execution**
-   - Use specific filters when possible
-   - Leverage parallel execution
-   - Monitor task dependencies
+Key configuration files in the repository:
 
-## Common Commands
-
-### Development
-
-```bash
-# Start development
-pnpm dev --filter admin
-
-# Build specific package
-pnpm build --filter @sfh/backend
-
-# Watch mode for package
-pnpm watch --filter @sfh/ui
-```
-
-### Testing
-
-```bash
-# Run all tests
-pnpm test
-
-# Test specific app
-pnpm test --filter admin
-
-# Test with dependencies
-pnpm test --filter admin...
-```
-
-### Maintenance
-
-```bash
-# Clean all caches
-pnpm turbo clean
-
-# Prune old cache entries
-pnpm turbo prune
-
-# Generate dependency graph
-pnpm turbo graph
-```
-
-## Resources
-
-- [Turborepo Documentation](https://turbo.build/repo/docs)
-- [Monorepo Handbook](https://turbo.build/repo/docs/handbook)
-- [Task Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [CLI Reference](https://turbo.build/repo/docs/reference/command-line-reference) 
+- `/turbo.json` - Root Turborepo configuration
+- `/pnpm-workspace.yaml` - PNPM workspace configuration
+- `/package.json` - Root package configuration
+- `/tsconfig.json` - Root TypeScript configuration (referenced in global dependencies)
+- `/.env.example` - Example environment variables file

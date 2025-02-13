@@ -12,24 +12,27 @@ The Admin Dashboard is built using our standard frontend stack, which combines m
 ### Core Framework: Astro
 
 We use [Astro](https://astro.build) as our core web framework, chosen for its:
+
 - **Performance**: Zero-JS by default with optional hydration
 - **Component Islands**: Selective hydration for interactive components
 - **Framework Flexibility**: Ability to use multiple frameworks in one project
 - **Server-Side Rendering**: Built-in SSR support for better performance and SEO
 
 Our Astro setup includes:
+
 ```js
 // astro.config.mjs
 export default defineConfig({
-  output: 'server',  // Server-side rendering mode
+  output: 'server', // Server-side rendering mode
   integrations: [svelte()],
-  adapter: vercel()  // Deployment target
-})
+  adapter: vercel(), // Deployment target
+});
 ```
 
 ### UI Framework: Svelte
 
 We use [Svelte](https://svelte.dev) (v5) as our primary UI framework:
+
 - **Zero-runtime overhead**: Svelte compiles to vanilla JavaScript
 - **Reactive by default**: Built-in reactivity system
 - **Minimal boilerplate**: Clean, intuitive syntax
@@ -40,26 +43,29 @@ We use [Svelte](https://svelte.dev) (v5) as our primary UI framework:
 Our styling stack combines several powerful tools:
 
 #### Tailwind CSS
+
 We use [Tailwind CSS](https://tailwindcss.com) for utility-first styling:
+
 - **Consistent design system**: Predefined design tokens
 - **Performance**: Only includes used styles
 - **Developer experience**: Quick iterations with utility classes
 
 #### DaisyUI
+
 [DaisyUI](https://daisyui.com) provides component classes on top of Tailwind:
+
 - **Ready-to-use components**: Buttons, cards, modals, etc.
 - **Themeable**: Easy customization
 - **Semantic classes**: More maintainable than raw utility classes
 
 Our Tailwind configuration:
+
 ```js
 // tailwind.config.mjs
 export default {
   content: ['./src/**/*.{html,js,jsx,ts,tsx,vue,svelte,astro}'],
-  plugins: [
-    require('daisyui'),
-  ],
-}
+  plugins: [require('daisyui')],
+};
 ```
 
 ### Testing Infrastructure
@@ -67,6 +73,7 @@ export default {
 We maintain comprehensive testing coverage using:
 
 - **Vitest**: Unit and integration testing
+
   - Fast execution
   - Native TypeScript support
   - Jest-compatible API
@@ -77,6 +84,7 @@ We maintain comprehensive testing coverage using:
   - Network interception
 
 Available testing commands:
+
 ```bash
 # Unit tests
 pnpm test
@@ -91,6 +99,7 @@ pnpm test:e2e:ui  # With UI mode
 ### Deployment
 
 We deploy to [Vercel](https://vercel.com) using the `@astrojs/vercel` adapter:
+
 - **Zero-config deployments**: Automatic build detection
 - **Edge functions**: Global low-latency
 - **Preview deployments**: Every PR gets a preview URL
@@ -116,6 +125,7 @@ apps/admin/
 ## Development Workflow
 
 1. Start the development server:
+
    ```bash
    pnpm dev --filter admin
    ```
@@ -137,4 +147,4 @@ apps/admin/
 - Use Svelte stores for state management
 - Leverage Astro's partial hydration
 - Style with Tailwind utility classes
-- Use DaisyUI components when available 
+- Use DaisyUI components when available

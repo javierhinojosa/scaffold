@@ -42,6 +42,7 @@ def some_function(*args, **kwargs):
 ```
 
 The decorator automatically:
+
 - Creates a span for the function
 - Captures input parameters
 - Records output or errors
@@ -72,6 +73,7 @@ The decorator automatically:
 ### Environment Setup
 
 1. Set up environment variables:
+
 ```bash
 LANGFUSE_PUBLIC_KEY=your_public_key
 LANGFUSE_SECRET_KEY=your_secret_key
@@ -133,11 +135,13 @@ finally:
 ### Key Metrics
 
 1. **Performance Metrics**
+
    - Response times
    - Success rates
    - Error frequencies
 
 2. **Cost Metrics**
+
    - API usage
    - Token consumption
    - Resource utilization
@@ -152,11 +156,13 @@ finally:
 ### Common Issues
 
 1. **Missing Traces**
+
    - Verify environment variables
    - Check trace initialization
    - Ensure proper span closure
 
 2. **Incomplete Data**
+
    - Validate metadata inclusion
    - Check error handling
    - Verify span updates
@@ -171,4 +177,4 @@ finally:
 - [Langfuse Documentation](https://langfuse.com/docs)
 - [API Reference](https://langfuse.com/docs/api)
 - [CrewAI Integration Guide](/dev/tools/crewai)
-- [Monitoring Best Practices](/reference/monitoring) 
+- [Monitoring Best Practices](/reference/monitoring)

@@ -72,26 +72,18 @@ Each agent action and task execution is traced for monitoring and debugging purp
 1. Create and activate a virtual environment:
 
 <Tabs>
-  <TabItem label="macOS/Linux">
-  ```bash
-  python -m venv .venv
-  source .venv/bin/activate
-  ```
-  </TabItem>
-  <TabItem label="Windows">
-  ```bash
-  python -m venv .venv
-  .venv\Scripts\activate
-  ```
-  </TabItem>
+  <TabItem label="macOS/Linux">```bash python -m venv .venv source .venv/bin/activate ```</TabItem>
+  <TabItem label="Windows">```bash python -m venv .venv .venv\Scripts\activate ```</TabItem>
 </Tabs>
 
 2. Install dependencies:
+
 ```bash
 pip install -r apps/crewai/development/requirements.txt
 ```
 
 3. Configure environment variables:
+
 ```bash
 cp apps/crewai/development/.env.example apps/crewai/development/.env
 ```
@@ -101,11 +93,13 @@ cp apps/crewai/development/.env.example apps/crewai/development/.env
 To execute the CrewAI system:
 
 1. Navigate to the development directory:
+
 ```bash
 cd apps/crewai/development
 ```
 
 2. Run the main script:
+
 ```bash
 python src/main.py
 ```
@@ -115,6 +109,7 @@ python src/main.py
 Our CrewAI implementation includes several custom tools:
 
 1. **Directory Operations**
+
    - List directory contents
    - Generate file trees
    - Read file contents
@@ -127,11 +122,13 @@ Our CrewAI implementation includes several custom tools:
 ## Best Practices
 
 1. **Configuration Management**
+
    - Keep agent and task configurations in YAML files
    - Use environment variables for sensitive data
    - Version control configuration changes
 
 2. **Error Handling**
+
    - Implement comprehensive error tracking
    - Use Langfuse traces for debugging
    - Handle edge cases gracefully
@@ -146,11 +143,13 @@ Our CrewAI implementation includes several custom tools:
 Common issues and solutions:
 
 1. **Environment Setup**
+
    - Ensure Python version compatibility
    - Verify all dependencies are installed
    - Check environment variables
 
 2. **Execution Issues**
+
    - Review Langfuse traces for errors
    - Check agent configurations
    - Validate task definitions
@@ -164,4 +163,4 @@ Common issues and solutions:
 
 - [CrewAI Documentation](https://docs.crewai.com)
 - [Langfuse Integration Guide](/dev/tools/langfuse)
-- [Configuration Reference](/reference/crewai-config) 
+- [Configuration Reference](/reference/crewai-config)

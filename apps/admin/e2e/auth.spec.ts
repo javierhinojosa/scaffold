@@ -17,7 +17,7 @@ test.describe('Authentication Flow', () => {
 
   test('should show error message with wrong credentials', async ({ page }) => {
     await page.goto('/login');
-    
+
     // Fill in wrong credentials
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', 'wrongpassword');
@@ -30,7 +30,7 @@ test.describe('Authentication Flow', () => {
 
   test('should login successfully and redirect to dashboard', async ({ page }) => {
     await page.goto('/login');
-    
+
     // Fill in correct credentials
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
@@ -38,7 +38,7 @@ test.describe('Authentication Flow', () => {
 
     // Should redirect to dashboard
     await expect(page).toHaveURL('/dashboard');
-    
+
     // Should show dashboard content
     await expect(page.locator('h1')).toContainText('Admin Dashboard');
   });
@@ -53,12 +53,12 @@ test.describe('Authentication Flow', () => {
 
     // Then logout
     await page.click('button:has-text("Sign out")');
-    
+
     // Should redirect to login page
     await expect(page).toHaveURL('/login');
-    
+
     // Should not be able to access dashboard anymore
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/login');
   });
-}); 
+});

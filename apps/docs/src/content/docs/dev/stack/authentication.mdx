@@ -26,6 +26,7 @@ const auth = createSupabaseAuth(
 ```
 
 The `Auth` class provides:
+
 - User management and sessions
 - Secure password hashing
 - JWT tokens for session management
@@ -62,13 +63,7 @@ export const auth = createSupabaseAuth(
 );
 
 // Re-export auth methods for convenience
-export const {
-  signInWithEmail,
-  signUp,
-  signOut,
-  getCurrentUser,
-  onAuthStateChange,
-} = auth;
+export const { signInWithEmail, signUp, signOut, getCurrentUser, onAuthStateChange } = auth;
 ```
 
 #### Auth Store
@@ -118,9 +113,10 @@ export const authStore = createSvelteAuthStore({
 ### Authentication Flow
 
 1. **Login Process**:
+
    ```typescript
    import { auth } from '../lib/auth';
-   
+
    async function handleLogin(email: string, password: string) {
      const { user } = await auth.signInWithEmail(email, password);
      // Handle successful login
@@ -128,6 +124,7 @@ export const authStore = createSvelteAuthStore({
    ```
 
 2. **Session Management**:
+
    - Sessions are managed by Supabase
    - Auth store syncs with Supabase's auth state
    - Real-time session updates through `onAuthStateChange`
@@ -138,6 +135,7 @@ export const authStore = createSvelteAuthStore({
    // dashboard.astro or any protected page
    import ProtectedLayout from '../layouts/ProtectedLayout.svelte';
    ---
+
    <ProtectedLayout client:load>
      <YourProtectedContent />
    </ProtectedLayout>
@@ -209,26 +207,31 @@ export const authStore = createSvelteAuthStore({
 ## Best Practices
 
 ### Authentication Setup
+
 - Always use the shared `@sfh/backend` package for authentication
 - Configure environment variables properly
 - Initialize auth early in your application
 
 ### Route Protection
+
 - Always wrap protected content in `ProtectedLayout`
 - Use RLS policies as the primary security mechanism
 - Never rely solely on client-side auth checks
 
 ### Error Handling
+
 - Always handle authentication errors gracefully
 - Provide clear feedback to users
 - Log authentication failures appropriately
 
 ### State Management
+
 - Use the provided auth store for state management
 - Avoid storing sensitive auth data in local storage
 - Clear auth state properly on logout
 
 ### Performance
+
 - Use `client:load` directive for auth components
 - Implement loading states for better UX
 - Cache auth state appropriately
@@ -261,7 +264,7 @@ export const testClient = createClient<Database>(supabaseUrl, supabaseServiceKey
 export async function setupTestUser() {
   // Delete the user if it exists
   const { data: existingUser } = await testClient.auth.admin.listUsers();
-  const userToDelete = existingUser?.users.find(u => u.email === TEST_USER.email);
+  const userToDelete = existingUser?.users.find((u) => u.email === TEST_USER.email);
   if (userToDelete) {
     await testClient.auth.admin.deleteUser(userToDelete.id);
   }
@@ -279,8 +282,10 @@ export async function setupTestUser() {
 
 // Clean up test user after tests
 export async function cleanupTestUser() {
-  const { data: { users } } = await testClient.auth.admin.listUsers();
-  const testUser = users.find(u => u.email === TEST_USER.email);
+  const {
+    data: { users },
+  } = await testClient.auth.admin.listUsers();
+  const testUser = users.find((u) => u.email === TEST_USER.email);
   if (testUser) {
     await testClient.auth.admin.deleteUser(testUser.id);
   }
@@ -320,9 +325,7 @@ describe('Auth', () => {
   });
 
   it('should fail to sign in with incorrect password', async () => {
-    await expect(
-      auth.signInWithEmail(TEST_USER.email, 'wrongpassword')
-    ).rejects.toThrow();
+    await expect(auth.signInWithEmail(TEST_USER.email, 'wrongpassword')).rejects.toThrow();
   });
 
   it('should sign up a new user', async () => {
@@ -331,8 +334,10 @@ describe('Auth', () => {
 
     try {
       // Clean up any existing test user first
-      const { data: { users } } = await auth.client.auth.admin.listUsers();
-      const existingUser = users.find(u => u.email === testEmail);
+      const {
+        data: { users },
+      } = await auth.client.auth.admin.listUsers();
+      const existingUser = users.find((u) => u.email === testEmail);
       if (existingUser) {
         await auth.client.auth.admin.deleteUser(existingUser.id);
       }
@@ -343,8 +348,10 @@ describe('Auth', () => {
       expect(user?.email).toBe(testEmail);
     } finally {
       // Always clean up after test
-      const { data: { users } } = await auth.client.auth.admin.listUsers();
-      const testUser = users.find(u => u.email === testEmail);
+      const {
+        data: { users },
+      } = await auth.client.auth.admin.listUsers();
+      const testUser = users.find((u) => u.email === testEmail);
       if (testUser) {
         await auth.client.auth.admin.deleteUser(testUser.id);
       }
@@ -353,38 +360,45 @@ describe('Auth', () => {
 
   it('should sign out successfully', async () => {
     // Sign in and verify session
-    const { data: { session }, error } = await auth.client.auth.signInWithPassword({
+    const {
+      data: { session },
+      error,
+    } = await auth.client.auth.signInWithPassword({
       email: TEST_USER.email,
       password: TEST_USER.password,
     });
     expect(error).toBeNull();
     expect(session).toBeDefined();
-    
+
     // Test sign out
     await auth.signOut();
-    
+
     // Verify session is cleared
-    const { data: { session: currentSession } } = await auth.client.auth.getSession();
+    const {
+      data: { session: currentSession },
+    } = await auth.client.auth.getSession();
     expect(currentSession).toBeNull();
   });
 
   it('should handle auth state changes', async () => {
     let authStateUser: any = null;
-    
+
     // Set up auth state listener
-    const { data: { subscription } } = auth.client.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = auth.client.auth.onAuthStateChange((_event, session) => {
       authStateUser = session?.user ?? null;
     });
 
     try {
       // Test sign in state change
       await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(authStateUser?.email).toBe(TEST_USER.email);
 
       // Test sign out state change
       await auth.signOut();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(authStateUser).toBeNull();
     } finally {
       subscription.unsubscribe();
@@ -407,13 +421,11 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: [resolve(__dirname, '../testing/src/setup.ts')],
-    environmentMatchGlobs: [
-      ['**/*.test.ts', 'node'],
-    ],
+    environmentMatchGlobs: [['**/*.test.ts', 'node']],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     deps: {
-      inline: ['@sfh/testing']
-    }
+      inline: ['@sfh/testing'],
+    },
   },
 });
 ```
@@ -440,21 +452,25 @@ afterEach(() => {
 ### Test Best Practices
 
 1. **User Management**:
+
    - Use `setupTestUser` and `cleanupTestUser` for consistent test user handling
    - Clean up test users in `finally` blocks to ensure cleanup even if tests fail
    - Use unique email addresses for signup tests to avoid conflicts
 
 2. **Session Handling**:
+
    - Always verify both successful operations and error cases
    - Check session state after sign in/out operations
    - Use proper error handling with `expect().rejects.toThrow()`
 
 3. **State Changes**:
+
    - Properly handle auth state subscriptions
    - Always unsubscribe from listeners in `finally` blocks
    - Use timeouts when testing async state changes
 
 4. **Test Organization**:
+
    - Group related tests using `describe` blocks
    - Use clear, descriptive test names
    - Follow the Arrange-Act-Assert pattern
@@ -470,6 +486,7 @@ afterEach(() => {
 To run authentication tests:
 
 1. Set up environment variables in `.env.test`:
+
 ```bash
 PUBLIC_SUPABASE_URL="your-test-project-url"
 PUBLIC_SUPABASE_ANON_KEY="your-test-anon-key"
@@ -477,6 +494,7 @@ SUPABASE_SERVICE_KEY="your-test-service-key"
 ```
 
 2. Run the tests:
+
 ```bash
 # Run all tests
 pnpm run test
@@ -491,6 +509,7 @@ pnpm run test src/__tests__/auth.test.ts
 ### Common Testing Patterns
 
 1. **Testing Protected Routes**:
+
 ```typescript
 test('should protect routes', async ({ page }) => {
   await page.goto('/dashboard');
@@ -499,18 +518,20 @@ test('should protect routes', async ({ page }) => {
 ```
 
 2. **Testing Error States**:
+
 ```typescript
 test('should handle invalid credentials', async () => {
-  await expect(
-    auth.signInWithEmail('invalid@email.com', 'wrongpass')
-  ).rejects.toThrow();
+  await expect(auth.signInWithEmail('invalid@email.com', 'wrongpass')).rejects.toThrow();
 });
 ```
 
 3. **Testing State Changes**:
+
 ```typescript
 test('should update auth state', async () => {
-  const { data: { subscription } } = auth.client.auth.onAuthStateChange(callback);
+  const {
+    data: { subscription },
+  } = auth.client.auth.onAuthStateChange(callback);
   try {
     // Test state changes
   } finally {
@@ -524,11 +545,13 @@ test('should update auth state', async () => {
 Common issues and their solutions:
 
 1. **Session Not Persisting**
+
    - Check if cookies are enabled
    - Verify SSL configuration
    - Ensure correct environment variables
 
 2. **Protected Route Flashing**
+
    - Use `client:load` directive
    - Implement proper loading states
    - Check auth store initialization
@@ -536,4 +559,4 @@ Common issues and their solutions:
 3. **RLS Policy Issues**
    - Verify policy syntax
    - Check user authentication state
-   - Test policies in Supabase Studio 
+   - Test policies in Supabase Studio
