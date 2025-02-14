@@ -11,7 +11,7 @@
     "format:js": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
     "format:py": "black apps/crewai/**/*.py apps/temporal/**/*.py",
     "format:misc": "prettier --write \"**/*.{json,yaml,yml,md,mdx,css,scss,astro,svelte}\"",
-    "clean": "turbo run clean && rimraf .turbo",
+    "clean": "turbo run clean && rimraf $(cat .gitignore | sed 's/^#.*$//;/^$/d;s/^!//' | tr '\\n' ' ')",
     "clean:all": "pnpm clean && rimraf node_modules **/node_modules"
   },
   "devDependencies": {
@@ -20,7 +20,8 @@
     "prettier-plugin-astro": "^0.13.0",
     "prettier-plugin-svelte": "^3.1.2",
     "turbo": "^2.4.1",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "rimraf": "^5.0.0"
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {

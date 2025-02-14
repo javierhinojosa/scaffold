@@ -84,6 +84,7 @@ apps/admin/.env
 apps/admin/.env.production
 apps/admin/.DS_Store
 apps/admin/.idea/
+apps/admin/.turbo/
 
 # Docs App
 apps/docs/dist/
@@ -95,6 +96,19 @@ apps/docs/.env
 apps/docs/.env.production
 apps/docs/.DS_Store
 apps/docs/.idea/
+apps/docs/.turbo/
+
+# Web App
+apps/web/dist/
+apps/web/.astro
+apps/web/node_modules/
+apps/web/npm-debug.log*
+apps/web/pnpm-debug.log*
+apps/web/.env
+apps/web/.env.production
+apps/web/.DS_Store
+apps/web/.idea/
+apps/web/.turbo/
 
 # CrewAI
 apps/crewai/development/.env
@@ -107,3 +121,16 @@ packages/backend/dist/
 # Testing
 packages/testing/dist/
 packages/testing/.turbo/
+
+# Temporal
+packages/temporal/__pycache__/
+packages/temporal/venv/
+packages/temporal/.venv/
+packages/temporal/*.pyc
+packages/temporal/.env
+packages/temporal/.DS_Store
+
+# CrewAI
+apps/crewai/development/.output.log
+apps/crewai/development/.venv/
+apps/crewai/development/__pycache__/
