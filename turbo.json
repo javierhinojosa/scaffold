@@ -17,6 +17,10 @@
       "cache": true,
       "persistent": true
     },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
     "test": {
       "dependsOn": ["^build"],
       "inputs": [

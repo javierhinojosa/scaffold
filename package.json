@@ -10,7 +10,9 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yaml,yml,css,scss,astro,svelte}\" && pnpm format:py",
     "format:js": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
     "format:py": "black apps/crewai/**/*.py apps/temporal/**/*.py",
-    "format:misc": "prettier --write \"**/*.{json,yaml,yml,md,mdx,css,scss,astro,svelte}\""
+    "format:misc": "prettier --write \"**/*.{json,yaml,yml,md,mdx,css,scss,astro,svelte}\"",
+    "clean": "turbo run clean && rimraf .turbo",
+    "clean:all": "pnpm clean && rimraf node_modules **/node_modules"
   },
   "devDependencies": {
     "@types/node": "^22.13.1",
