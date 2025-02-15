@@ -6,13 +6,20 @@ export type { User };
 export type AuthStore = {
   user: User | null;
   loading: boolean;
+  error: Error | null;
 };
 
 export class Auth {
   private supabaseClient: SupabaseClient<Database>;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
-    this.supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+    this.supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: process.env.NODE_ENV !== 'test',
+        autoRefreshToken: process.env.NODE_ENV !== 'test',
+        debug: true,
+      },
+    });
   }
 
   // Expose client for testing purposes
@@ -28,6 +35,32 @@ export class Auth {
 
     if (error) throw error;
     return { user: data.user, session: data.session };
+  }
+
+  async signInWithOAuth(provider: 'github' | 'google') {
+    const { data, error } = await this.supabaseClient.auth.signInWithOAuth({
+      provider,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  async resetPassword(email: string) {
+    const { error } = await this.supabaseClient.auth.resetPasswordForEmail(email);
+    if (error) throw error;
+  }
+
+  async updatePassword(newPassword: string) {
+    const { error } = await this.supabaseClient.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw error;
+  }
+
+  async getSession() {
+    const { data, error } = await this.supabaseClient.auth.getSession();
+    if (error) throw error;
+    return data.session;
   }
 
   async signUp(email: string, password: string) {
@@ -75,6 +108,7 @@ export function createSvelteAuthStore(options: {
   const store = options.createStore({
     user: null,
     loading: true,
+    error: null,
   });
 
   async function init() {
@@ -82,21 +116,55 @@ export function createSvelteAuthStore(options: {
       const {
         data: { session },
       } = await options.auth.client.auth.getSession();
-      store.set({ user: session?.user ?? null, loading: false });
+      store.set({ user: session?.user ?? null, loading: false, error: null });
 
       options.auth.onAuthStateChange((user) => {
-        store.set({ user, loading: false });
+        store.set({ user, loading: false, error: null });
       });
     } catch (error) {
       // Suppress AuthSessionMissingError as it's expected when not logged in
       if (error instanceof Error && error.name !== 'AuthSessionMissingError') {
         console.error('Error initializing auth store:', error);
       }
-      store.set({ user: null, loading: false });
+      store.set({
+        user: null,
+        loading: false,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+      });
     }
   }
 
   init();
 
   return store;
+}
+
+export function createAstroAuthStore(auth: Auth) {
+  let store: AuthStore = {
+    user: null,
+    loading: true,
+    error: null,
+  };
+
+  async function initialize() {
+    try {
+      const session = await auth.getSession();
+      store = {
+        user: session?.user ?? null,
+        loading: false,
+        error: null,
+      };
+    } catch (error) {
+      store = {
+        user: null,
+        loading: false,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+      };
+    }
+  }
+
+  return {
+    getStore: () => store,
+    initialize,
+  };
 }

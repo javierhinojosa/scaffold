@@ -21,9 +21,9 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     define: {
-      'import.meta.env.GITHUB_REPO': JSON.stringify(process.env.GITHUB_REPO),
-      'import.meta.env.GITHUB_BRANCH': JSON.stringify(process.env.GITHUB_BRANCH),
-      'import.meta.env.GITHUB_TOKEN': JSON.stringify(process.env.GITHUB_TOKEN),
+      'import.meta.env.PUBLIC_GITHUB_REPO': JSON.stringify(process.env.PUBLIC_GITHUB_REPO),
+      'import.meta.env.PUBLIC_GITHUB_BRANCH': JSON.stringify(process.env.PUBLIC_GITHUB_BRANCH),
+      'import.meta.env.PUBLIC_GITHUB_TOKEN': JSON.stringify(process.env.PUBLIC_GITHUB_TOKEN),
       'import.meta.env.PUBLIC_ADMIN_URL': JSON.stringify(process.env.PUBLIC_ADMIN_URL),
       'import.meta.env.PUBLIC_WEBSITE_URL': JSON.stringify(process.env.PUBLIC_WEBSITE_URL),
     },
@@ -90,6 +90,7 @@ export default defineConfig({
                         label: 'AI & Monitoring',
                         items: [
                           { label: 'CrewAI', link: '/dev/tools/crewai/' },
+                          { label: 'CrewAI', link: '/dev/apps/crewai/'},
                           { label: 'Langfuse', link: '/dev/tools/langfuse/' },
                         ]
                       },
@@ -100,6 +101,8 @@ export default defineConfig({
                           { label: 'Testing', link: '/dev/stack/testing/' },
                           { label: 'Turborepo', link: '/dev/stack/turborepo/' },
                           { label: 'Deployment', link: '/dev/stack/deployment/' },
+                          { label: 'Temporal', link: '/dev/tools/temporal/' },
+                          { label: 'Vector Search', link: '/dev/tools/vector-search/' },
                         ]
                       }
                     ]
@@ -143,6 +146,7 @@ export default defineConfig({
                     items: [
                       { label: 'Documentation Management', link: '/ops/it-department/docs/' },
                       { label: 'Team Members', link: '/ops/it-department/team/' },
+                      { label: 'tech crewai', link: '/ops/technology/crewai/' },
                     ],
                 },
             ],

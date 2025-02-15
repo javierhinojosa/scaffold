@@ -24,10 +24,9 @@ function formatDate(date: Date) {
   return `${Math.floor(days / 365)} years ago`;
 }
 
-// Format full date in Cancun timezone
+// Format full date in local timezone
 function formatFullDate(date: Date) {
   return date.toLocaleString('en-US', {
-    timeZone: 'America/Cancun',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -37,10 +36,9 @@ function formatFullDate(date: Date) {
   });
 }
 
-// Format compact date in Cancun timezone
+// Format compact date in local timezone
 function formatCompactDate(date: Date) {
   return date.toLocaleString('en-US', {
-    timeZone: 'America/Cancun',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -51,7 +49,7 @@ function formatCompactDate(date: Date) {
 ---
 
 <div
-  class="doc-status-indicator m-4 p-5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+  class="doc-status-indicator m-4 p-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
 >
   <div class="flex items-center gap-3">
     <div class="flex-1">
@@ -109,4 +107,3 @@ function formatCompactDate(date: Date) {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 </style>
-

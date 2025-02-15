@@ -35,8 +35,12 @@ Our root `turbo.json` defines the core pipeline and task configurations:
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "cache": false,
+      "cache": true,
       "persistent": true
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
     },
     "test": {
       "dependsOn": ["^build"],
@@ -68,111 +72,122 @@ packages:
 ### Core Tasks
 
 1. **Build**
+
    ```bash
    pnpm build
    ```
+
    - Builds all packages and applications
    - Respects dependencies between packages
    - Uses `$TURBO_DEFAULT$` and `.env*` files as inputs
    - Outputs to `dist/**` (excluding cache)
 
 2. **Development**
+
    ```bash
    pnpm dev --filter <app-name>
    ```
+
    - Starts development server for specific application
-   - Runs in persistent mode with caching disabled
+   - Runs in persistent mode with caching enabled
    - Watches for changes in dependencies
 
 3. **Testing**
+
    ```bash
    pnpm test
    ```
+
    - Runs tests across all packages
    - Depends on build task completion
    - Handles various test types (unit, integration, e2e)
    - Outputs to `coverage/**` and `test-results/**`
 
 4. **Type Checking**
+
    ```bash
    pnpm check-types
    ```
+
    - Runs TypeScript type checking across packages
    - Ensures type safety across the monorepo
 
 5. **Linting**
+
    ```bash
    pnpm lint
    ```
+
    - Runs linting across all packages
    - Respects dependencies between packages
+
+6. **Cleaning**
+   ```bash
+   pnpm clean
+   ```
+   - Cleans build artifacts
+   - No caching for clean operations
+   - `pnpm clean:all` also removes node_modules
 
 ### Testing Configuration
 
 Our setup includes specialized test tasks:
 
 1. **Unit Tests**
+
    ```bash
    pnpm test:unit
    ```
+
    - Focuses on unit tests in `tests/unit`
    - Uses Vitest for test execution
    - Outputs coverage reports
 
 2. **Integration Tests**
+
    ```bash
    pnpm test:integration
    ```
+
    - Runs integration tests from `tests/integration`
    - Depends on build completion
    - Generates coverage reports
 
 3. **E2E Tests**
+
    ```bash
    pnpm test:e2e
    ```
+
    - Executes end-to-end tests using Playwright
    - Tests from `e2e` directory
    - Generates Playwright reports
 
-4. **CI Testing**
+4. **Watch Mode**
+
+   ```bash
+   pnpm test:watch
+   ```
+
+   - Runs tests in watch mode
+   - No caching
+   - Persistent execution
+
+5. **CI Testing**
    ```bash
    pnpm test:ci
    ```
    - Comprehensive test suite for CI environments
    - Runs all test types
    - Includes additional CI-specific configurations
-
-### Development Workflow
-
-1. **Running Tasks**
-   ```bash
-   # Start specific app
-   pnpm dev --filter admin
-
-   # Build specific package
-   pnpm build --filter @sfh/package-name
-
-   # Run tests for specific app
-   pnpm test --filter app-name
-   ```
-
-2. **Formatting**
-   ```bash
-   # Format all files
-   pnpm format
-
-   # Format specific file types
-   pnpm format:js    # JavaScript/TypeScript files
-   pnpm format:py    # Python files
-   pnpm format:misc  # Other file types
-   ```
+   - Outputs all test reports and coverage
 
 ## Best Practices
 
 ### Task Configuration
 
 1. **Input/Output Management**
+
    - Define specific input patterns for accurate caching
    - Exclude cache directories from outputs
    - Include environment files in global dependencies
@@ -185,6 +200,7 @@ Our setup includes specialized test tasks:
 ### Workspace Organization
 
 1. **Package Structure**
+
    - Organize code in `apps/*` and `packages/*`
    - Share common code through packages
    - Maintain clear dependency boundaries
@@ -193,7 +209,6 @@ Our setup includes specialized test tasks:
    - Use PNPM as package manager
    - Support Node.js versions 18, 20, and 22+
    - Lock specific built dependencies (e.g., esbuild)
-
 
 ## Related Files
 

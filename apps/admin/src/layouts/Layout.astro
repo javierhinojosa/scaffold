@@ -1,16 +1,8 @@
 ---
 import '../styles/global.css';
 import ThemeToggle from '../components/ThemeToggle.svelte';
-
-interface Props {
-  requireAuth?: boolean;
-}
-
-const { requireAuth = false } = Astro.props;
-const isLoginPage = Astro.url.pathname === '/login';
 ---
 
-<!doctype html>
 <html lang="en">
   <head>
     <script is:inline>
@@ -30,27 +22,6 @@ const isLoginPage = Astro.url.pathname === '/login';
     <!-- Theme toggle -->
     <ThemeToggle client:load />
 
-    {
-      requireAuth ? (
-        <div id="auth-wrapper">
-          <div id="loading" class="flex items-center justify-center min-h-screen">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400" />
-          </div>
-          <div id="content" class="hidden">
-            <slot />
-          </div>
-        </div>
-      ) : (
-        <slot />
-      )
-    }
-
-    {
-      requireAuth && (
-        <script>
-          import {initAuthCheck} from '../lib/auth-check'; initAuthCheck(window.location.pathname);
-        </script>
-      )
-    }
+    <slot />
   </body>
 </html>

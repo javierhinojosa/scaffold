@@ -9,19 +9,19 @@
     "test": "turbo test",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yaml,yml,css,scss,astro,svelte}\" && pnpm format:py",
     "format:js": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
-    "format:py": "black apps/crewai/**/*.py apps/temporal/**/*.py",
+    "format:py": "black apps/crewai apps/temporal",
     "format:misc": "prettier --write \"**/*.{json,yaml,yml,md,mdx,css,scss,astro,svelte}\"",
     "clean": "turbo run clean && rimraf $(cat .gitignore | sed 's/^#.*$//;/^$/d;s/^!//' | tr '\\n' ' ')",
     "clean:all": "pnpm clean && rimraf node_modules **/node_modules"
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
-    "prettier": "^3.5.0",
-    "prettier-plugin-astro": "^0.13.0",
-    "prettier-plugin-svelte": "^3.1.2",
-    "turbo": "^2.4.1",
-    "typescript": "5.7.3",
-    "rimraf": "^5.0.0"
+    "@types/node": "^22.13.4",
+    "prettier": "^3.5.1",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-svelte": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "turbo": "^2.4.2",
+    "typescript": "5.7.3"
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {
@@ -34,8 +34,12 @@
   },
   "dependencies": {
     "@playwright/test": "^1.50.1",
+    "@supabase/supabase-js": "^2.48.1",
     "@vitest/ui": "^3.0.5",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.1",
     "gray-matter": "^4.0.3",
+    "openai": "^4.85.1",
     "remark": "^15.0.1",
     "strip-markdown": "^6.0.0",
     "vitest": "^3.0.5"

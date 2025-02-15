@@ -2,6 +2,8 @@ import type { Props as StarlightProps } from '@astrojs/starlight/props';
 
 export interface Props extends StarlightProps {
   entry?: {
+    collection: string;
+    slug: string;
     data: {
       title: string;
       description?: string;

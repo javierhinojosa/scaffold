@@ -1,0 +1,165 @@
+---
+title: Vector Search
+description: Documentation for the vector search functionality used in our documentation system.
+---
+
+# Vector Search
+
+Our documentation system includes a powerful vector search capability that enables semantic search across all documentation content. This system uses embeddings to find relevant content based on meaning rather than just keyword matching.
+
+## Overview
+
+The vector search system consists of several components:
+
+- PostgreSQL with `pgvector` extension for vector storage and similarity search
+- Ollama for generating embeddings
+- Node.js scripts for processing and indexing content
+- API endpoints for performing searches
+
+## Architecture
+
+### Database Schema
+
+The system uses a PostgreSQL table with the following schema:
+
+```sql
+create table documents (
+  id bigint primary key generated always as identity,
+  content text,
+  path text,
+  full_content text,
+  embedding vector(768),
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+```
+
+An index is created for efficient similarity search:
+
+```sql
+create index documents_embedding_idx
+on documents
+using ivfflat (embedding vector_cosine_ops)
+with (lists = 100);
+```
+
+### Content Processing
+
+The system processes documentation content in the following way:
+
+1. **Content Cleaning**:
+   - Removes frontmatter
+   - Normalizes whitespace
+   - Removes markdown headers
+2. **Chunking**:
+
+   - Splits content into manageable chunks
+   - Maintains context within each chunk
+   - Preserves document structure
+
+3. **Embedding Generation**:
+   - Uses Ollama's `nomic-embed-text` model
+   - Generates 768-dimensional vectors
+   - Optimizes for semantic similarity
+
+## Setup Requirements
+
+To use the vector search system, you need:
+
+1. PostgreSQL with `pgvector` extension installed
+2. Ollama running locally with the `nomic-embed-text` model
+3. Node.js environment with required dependencies:
+   ```json
+   {
+     "dependencies": {
+       "axios": "^1.7.9",
+       "dotenv": "^16.4.7",
+       "pg": "^8.13.3"
+     }
+   }
+   ```
+
+## Usage
+
+### Indexing Content
+
+To index all documentation content:
+
+```bash
+node scripts/embed.js
+```
+
+This script will:
+
+1. Set up the database schema
+2. Find all MDX files in the documentation
+3. Process and chunk the content
+4. Generate embeddings
+5. Store documents with their embeddings
+
+### Similarity Search
+
+The system performs similarity search using cosine similarity. Results are filtered to ensure high relevance:
+
+```sql
+SELECT content, path, 1 - (embedding <=> $1::vector) as similarity
+FROM documents
+WHERE 1 - (embedding <=> $1::vector) > 0.4
+ORDER BY embedding <=> $1::vector
+LIMIT $2
+```
+
+### Performance Considerations
+
+- Embeddings are generated once per content chunk
+- Similarity search is optimized with IVFFlat indexing
+- Content is chunked to balance context and performance
+
+## Development
+
+### Adding New Content
+
+New content is automatically processed when you run the indexing script. The system:
+
+1. Detects new MDX files
+2. Processes their content
+3. Generates embeddings
+4. Stores them in the database
+
+### Modifying the System
+
+When modifying the vector search system:
+
+1. Update schema version if changing the database structure
+2. Maintain backwards compatibility with existing embeddings
+3. Test similarity search with various query types
+4. Monitor performance metrics
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Database Connection**:
+
+   - Verify PostgreSQL is running
+   - Check connection parameters
+   - Ensure pgvector extension is installed
+
+2. **Embedding Generation**:
+
+   - Verify Ollama is running
+   - Check model availability
+   - Monitor API responses
+
+3. **Search Quality**:
+   - Adjust similarity threshold
+   - Review chunking parameters
+   - Validate embedding quality
+
+## Future Improvements
+
+Planned enhancements:
+
+1. Real-time content indexing
+2. Advanced query preprocessing
+3. Multi-model embedding support
+4. Enhanced content chunking strategies

@@ -1,94 +1,49 @@
 # Scaffold Monorepo
 
-This monorepo contains the full stack application suite for scaffolding projects, including web applications, documentation, and shared packages.
+A modern full-stack application suite for scaffolding projects, featuring web applications, AI services, and shared packages.
 
-## 📦 Project Structure
+## Quick Start
 
-```
-.
-├── apps/
-│   ├── admin/        # Admin dashboard application
-│   ├── crewai/       # CrewAI development and configuration
-│   └── docs/         # Documentation site
-├── packages/
-│   ├── backend/      # Shared backend services and API
-│   └── testing/      # Common testing utilities
-```
+1. **Prerequisites**
 
-## 🚀 Getting Started
+   - Node.js (v12+)
+   - pnpm (v8.15.4+)
+   - Python (v3.11+)
+   - Poetry (v1.7+)
+   - Docker Desktop
 
-### Prerequisites
+2. **Setup**
 
-- Node.js (v18 or later)
-- PNPM (v8 or later)
-- Python 3.9+ (for CrewAI components)
+   ```bash
+   # Clone repository
+   git clone https://github.com/javierhinojosa/scaffold.git
+   cd scaffold
 
-### Installation
+   # Install dependencies
+   pnpm install
 
-1. Clone the repository:
+   # Set up environment variables
+   cp .env.example .env
+   ```
 
-```bash
-git clone https://github.com/javierhinojosa/scaffold.git
-cd scaffold
-```
+3. **Development**
 
-2. Install dependencies:
+   ```bash
+   # Start all services
+   pnpm turbo dev
 
-```bash
-pnpm install
-```
+   # Or start specific apps
+   pnpm dev --filter <app-name>
+   ```
 
-3. Set up Python virtual environment (for CrewAI):
+## Documentation
 
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-pip install -r apps/crewai/development/requirements.txt
-```
-
-4. Create environment variables:
+For detailed setup instructions, development guides, and architecture documentation, visit our [documentation site](http://localhost:4321) after running:
 
 ```bash
-cp .env.example .env
+pnpm dev --filter docs
 ```
 
-Edit `.env` with your configuration values.
+## License
 
-## 🛠️ Development
-
-### Running Applications
-
-Each application can be started independently:
-
-```bash
-# Start admin dashboard
-pnpm --filter admin dev
-
-# Start documentation site
-pnpm --filter docs dev
-
-# Start CrewAI development
-cd apps/crewai/development
-crewai run
-```
-
-### Project Commands
-
-- `pnpm build`: Build all applications and packages
-- `pnpm test`: Run tests across the monorepo
-- `pnpm lint`: Lint all code
-- `pnpm clean`: Clean build artifacts
-
-## 📚 Documentation
-
-- [Admin Dashboard](/apps/admin/README.md)
-- [CrewAI Development](/apps/crewai/development/README.md)
-- [Documentation Site](/apps/docs/README.md)
-- [Backend Services](/packages/backend/README.md)
-
-## 🤝 Contributing
-
-1. Create a new branch for your feature/fix
-2. Make your changes
-3. Run tests and linting
-4. Submit a pull request
+MIT

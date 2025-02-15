@@ -1,18 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createSupabaseAuth } from '../index';
-import { setupTestUser, cleanupTestUser, TEST_USER } from '../../../testing/src/auth';
+import { setupTestUser, cleanupTestUser, TEST_USER, testClient } from '../../../testing/src/auth';
 
 describe('Auth', () => {
+  // Create auth instance with service key for admin operations
+  console.log('Creating auth instance with:', {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_SERVICE_KEY,
+    // Log the actual values for debugging
+    urlValue: process.env.SUPABASE_URL,
+    keyValue: process.env.SUPABASE_SERVICE_KEY,
+  });
   const auth = createSupabaseAuth(
-    process.env.PUBLIC_SUPABASE_URL!,
-    process.env.PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!
   );
 
   beforeAll(async () => {
+    // Use testClient (with service key) for admin operations
     await setupTestUser();
   });
 
   afterAll(async () => {
+    // Use testClient (with service key) for admin operations
     await cleanupTestUser();
   });
 
@@ -31,31 +41,31 @@ describe('Auth', () => {
   });
 
   it('should sign up a new user', async () => {
-    const testEmail = 'test-signup-new@example.com';
+    const testEmail = 'test.signup.new@gmail.com';
     const testPassword = 'TestPassword123!';
 
     try {
-      // First cleanup any existing test user
+      // First cleanup any existing test user using admin client
       const {
         data: { users },
-      } = await auth.client.auth.admin.listUsers();
+      } = await testClient.auth.admin.listUsers();
       const existingUser = users.find((u) => u.email === testEmail);
       if (existingUser) {
-        await auth.client.auth.admin.deleteUser(existingUser.id);
+        await testClient.auth.admin.deleteUser(existingUser.id);
       }
 
-      // Then try to sign up
+      // Then try to sign up using public client
       const { user } = await auth.signUp(testEmail, testPassword);
       expect(user).toBeDefined();
       expect(user?.email).toBe(testEmail);
     } finally {
-      // Clean up the test user
+      // Clean up the test user using admin client
       const {
         data: { users },
-      } = await auth.client.auth.admin.listUsers();
+      } = await testClient.auth.admin.listUsers();
       const testUser = users.find((u) => u.email === testEmail);
       if (testUser) {
-        await auth.client.auth.admin.deleteUser(testUser.id);
+        await testClient.auth.admin.deleteUser(testUser.id);
       }
     }
   });

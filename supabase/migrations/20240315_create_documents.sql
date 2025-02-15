@@ -1,0 +1,1 @@
+create extension if not exists vector; create table if not exists documents (id bigint primary key generated always as identity, content text, embedding vector(768), created_at timestamp with time zone default timezone('utc'::text, now()));

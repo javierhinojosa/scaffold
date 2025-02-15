@@ -51,7 +51,6 @@ yarn.lock
 .pnp.loader.mjs
 .yarn/
 .yarnrc.yml
-pnpm-lock.yaml
 
 # Misc
 .vercel
@@ -114,21 +113,34 @@ apps/web/.turbo/
 apps/crewai/development/.env
 apps/crewai/development/.DS_Store
 apps/crewai/development/__pycache__/
+apps/crewai/development/output.log
 
 # Backend
 packages/backend/dist/
+packages/backend/.turbo/
+packages/backend/node_modules/
+packages/backend/npm-debug.log*
+packages/backend/pnpm-debug.log*
+packages/backend/.env
+packages/backend/.env.production
+packages/backend/.DS_Store
 
 # Testing
 packages/testing/dist/
 packages/testing/.turbo/
+packages/testing/node_modules/
+packages/testing/npm-debug.log*
+packages/testing/pnpm-debug.log*
+packages/testing/.env
+packages/testing/.env.production
 
 # Temporal
-packages/temporal/__pycache__/
-packages/temporal/venv/
-packages/temporal/.venv/
-packages/temporal/*.pyc
-packages/temporal/.env
-packages/temporal/.DS_Store
+apps/temporal/__pycache__/
+apps/temporal/venv/
+apps/temporal/.venv/
+apps/temporal/*.pyc
+apps/temporal/.env
+apps/temporal/.DS_Store
 
 # CrewAI
 apps/crewai/development/.output.log

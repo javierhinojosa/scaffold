@@ -21,12 +21,13 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/auth.ts src/setup.ts --format esm --dts --watch",
+    "build": "tsup --config tsup.config.ts",
+    "dev": "tsup --config tsup.config.ts --watch",
     "lint": "eslint src/",
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@sfh/backend": "workspace:*",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/svelte": "^4.0.5",
     "vitest": "^1.2.2",

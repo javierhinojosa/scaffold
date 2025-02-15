@@ -9,6 +9,12 @@ export function createTestClient(
     auth: {
       persistSession: false,
       autoRefreshToken: false,
+      debug: true,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${supabaseKey}`,
+      },
     },
   });
 }

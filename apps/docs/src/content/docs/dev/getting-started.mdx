@@ -7,11 +7,11 @@ description: Learn how to set up your development environment and start contribu
 
 Before you begin, ensure you have the following installed:
 
-- [Node.js](https://nodejs.org/) (version 18 or higher)
+- [Node.js](https://nodejs.org/) (version 18, 20, or >=22)
 - [pnpm](https://pnpm.io/) (version 8.15.4)
 - [Python](https://www.python.org/) (version 3.11 or higher)
 - [Poetry](https://python-poetry.org/) (version 1.7 or higher)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for Temporal)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for Temporal and Supabase)
 - Git
 
 For Mac users, you can install these prerequisites using Homebrew:
@@ -38,13 +38,21 @@ brew install --cask docker
    cd scaffold
    ```
 
-2. Install Node.js dependencies:
+2. Set up environment variables:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit the `.env` file and fill in the required values.
+
+3. Install Node.js dependencies:
 
    ```bash
    pnpm install
    ```
 
-3. Set up Python environments:
+4. Set up Python environments:
 
    ```bash
    # Set up CrewAI environment
@@ -56,16 +64,50 @@ brew install --cask docker
    poetry install
    ```
 
-4. Start Temporal server:
+5. Start the development infrastructure:
 
    ```bash
+   # Start Temporal server
    docker compose up temporal -d
    ```
 
-5. Build all packages:
+   Configure your environment variables for Supabase:
+
+   ```bash
+   # In your .env file, set these values from your Supabase project settings:
+   SUPABASE_URL=https://<your-project>.supabase.co
+   SUPABASE_ANON_KEY=<your-anon-key>
+   SUPABASE_SERVICE_KEY=<your-service-role-key>
+   
+   # Also set the public variables
+   PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
+   PUBLIC_SUPABASE_ANON_KEY=<same-as-SUPABASE_ANON_KEY>
+   ```
+
+   You can find these values in your Supabase project dashboard under Project Settings > API.
+
+6. Build all packages:
    ```bash
    pnpm build
    ```
+
+## Project Structure
+
+The project follows a monorepo structure using Turborepo:
+
+```
+scaffold/
+├── apps/
+│   ├── admin/    # Admin dashboard
+│   ├── crewai/   # CrewAI service
+│   ├── docs/     # Documentation site
+│   ├── temporal/ # Temporal workers
+│   └── web/      # Main web application
+├── packages/
+│   ├── backend/  # Shared backend utilities
+│   └── testing/  # Shared testing utilities
+└── supabase/     # Supabase configuration
+```
 
 ## Development Workflow
 
@@ -75,32 +117,37 @@ You can start applications individually or all at once using Turborepo:
 
 ```bash
 # Start all applications
-pnpm turbo dev
+pnpm dev
 
 # Start specific applications
-pnpm dev --filter <app-name>
+pnpm dev --filter admin  # Admin dashboard
+pnpm dev --filter docs   # Documentation site
+pnpm dev --filter web    # Main web application
+
+# Start Python services
+cd apps/crewai && poetry run python main.py    # CrewAI service
+cd apps/temporal && poetry run python worker.py # Temporal workers
 ```
 
-For example:
+### Testing
 
-- Admin dashboard: `pnpm dev --filter admin`
-- Documentation site: `pnpm dev --filter docs`
-- CrewAI service: `cd apps/crewai && poetry run python main.py`
-- Temporal workers: `cd apps/temporal && poetry run python worker.py`
-
-### Running Tests
-
-We use Vitest for unit tests and Playwright for end-to-end tests.
+We use Vitest for unit/integration tests and Playwright for end-to-end tests:
 
 ```bash
 # Run all tests
 pnpm test
 
+# Run specific test types
+pnpm test:unit         # Run unit tests
+pnpm test:integration  # Run integration tests
+pnpm test:e2e         # Run end-to-end tests
+pnpm test:ci          # Run all tests in CI mode
+
 # Run tests for a specific app/package
 pnpm test --filter <app-name>
 
-# Run tests in UI mode
-pnpm test:ui
+# Run tests in watch mode
+pnpm test:watch
 ```
 
 ### Code Quality
@@ -108,243 +155,73 @@ pnpm test:ui
 We maintain high code quality standards using various tools:
 
 ```bash
-# Format all supported files
-pnpm format
+# Format code
+pnpm format           # Format all files
+pnpm format:js       # Format JavaScript/TypeScript files
+pnpm format:py       # Format Python files
+pnpm format:misc     # Format other files
 
-# Format specific file types
-pnpm format:js    # Format JavaScript/TypeScript files
-pnpm format:py    # Format Python files
-pnpm format:misc  # Format other files (JSON, YAML, etc.)
+# Lint and type check
+pnpm lint           # Run ESLint
+pnpm check-types    # Run TypeScript type checking
 
-# Lint code
-pnpm lint
+# Clean build artifacts
+pnpm clean          # Clean build artifacts
+pnpm clean:all      # Clean everything including node_modules
 ```
 
-Our formatting tools include:
+Our tooling includes:
 
-- Prettier for JavaScript, TypeScript, JSON, YAML, Markdown, and CSS files
+- Prettier for JavaScript, TypeScript, JSON, YAML, Markdown, CSS, Astro, and Svelte files
 - Black for Python files
 - ESLint for JavaScript/TypeScript linting
-- Ruff for Python linting
+- TypeScript for type checking
+- Vitest and Playwright for testing
 
-To customize formatting rules, check these configuration files:
+Configuration files:
 
-- `.prettierrc` - Prettier configuration
-- `pyproject.toml` - Python tools configuration (Black, Ruff)
+- `.prettierrc.json` - Prettier configuration
+- `tsconfig.base.json` - Base TypeScript configuration
 - `.eslintrc.js` - ESLint rules
+- `pyproject.toml` - Python tools configuration (Black)
+- `turbo.json` - Turborepo pipeline configuration
 
-The format command will handle these file extensions:
+## Setting Up the Test Environment
 
-- `.js`, `.jsx`, `.ts`, `.tsx` (JavaScript/TypeScript)
-- `.svelte` (Svelte components)
-- `.astro` (Astro components)
-- `.css`, `.scss` (Stylesheets)
-- `.json`, `.yaml`, `.yml` (Configuration files)
-- `.md`, `.mdx` (Documentation)
-- `.py` (Python files)
+Our test suite uses Supabase for authentication and database testing. To run tests successfully:
 
-## Project Structure
-
-Our monorepo is organized into two main directories: `apps` and `packages`. Each serves a specific purpose in our architecture:
-
-### Applications (`apps/`)
-
-Our frontend and service applications live here, each with its own dedicated purpose:
-
-#### Frontend Applications
-
-🖥️ **Admin Dashboard** (`admin/`)
-```bash
-apps/admin/
-├── src/              # Application source code
-│   ├── components/   # Reusable UI components
-│   ├── layouts/      # Page layouts
-│   ├── lib/          # Utilities and helpers
-│   └── pages/        # Astro pages
-├── e2e/              # End-to-end tests
-└── public/           # Static assets
-```
-- Built with Astro and Svelte
-- Modern admin interface with DaisyUI
-- End-to-end testing with Playwright
-
-📚 **Documentation** (`docs/`)
-```bash
-apps/docs/
-├── src/
-│   ├── content/      # Documentation content (MDX)
-│   ├── components/   # Documentation components
-│   └── assets/       # Images and media
-└── public/           # Static assets
-```
-- Built with Astro and Starlight
-- Comprehensive project documentation
-- Interactive code examples
-
-#### Service Applications
-
-🤖 **CrewAI Service** (`crewai/`)
-```bash
-apps/crewai/
-├── src/              # AI service implementation
-├── tests/            # Unit and integration tests
-└── config/           # Service configuration
-```
-- Python-based AI automation
-- Integrates with LangChain and CrewAI
-- Requires OpenAI API key
-
-⚡ **Temporal Service** (`temporal/`)
-```bash
-apps/temporal/
-├── src/              # Workflow definitions
-├── workers/          # Temporal workers
-└── api/              # HTTP API endpoints
-```
-- Durable workflow orchestration
-- Python-based service
-- Requires local Temporal server
-
-### Shared Packages (`packages/`)
-
-Our reusable libraries and utilities are organized here:
-
-🧪 **Testing Utilities** (`testing/`)
-```bash
-packages/testing/
-├── src/
-│   ├── setup/       # Test setup utilities
-│   ├── fixtures/    # Common test fixtures
-│   └── helpers/     # Test helper functions
-└── config/          # Test configurations
-```
-- Common test configurations
-- Shared test helpers and fixtures
-- Integration with Vitest and Playwright
-
-🔧 **Backend Utilities** (`backend/`)
-```bash
-packages/backend/
-├── src/
-│   ├── auth/        # Authentication utilities
-│   ├── db/          # Database helpers
-│   └── api/         # API utilities
-└── config/          # Backend configurations
-```
-- Shared backend configurations
-- Common API utilities
-- Database helpers and types
-
-### Key Files
-
-Important configuration files at the root level:
-
-📄 **Configuration Files**
-```bash
-├── .env                 # Environment variables
-├── .prettierrc         # Code formatting rules
-├── .eslintrc          # Linting configuration
-├── tsconfig.json      # TypeScript configuration
-├── turbo.json         # Turborepo configuration
-└── pnpm-workspace.yaml # Workspace configuration
-```
-
-📦 **Package Management**
-```bash
-├── package.json       # Root package configuration
-└── pnpm-lock.yaml    # Dependency lock file
-```
-
-### Directory Structure Overview
-
-Here's a high-level view of the entire project structure:
-
-```bash
-scaffold/
-├── apps/              # Frontend and service applications
-│   ├── admin/         # Admin dashboard
-│   ├── docs/          # Documentation site
-│   ├── crewai/        # AI service
-│   └── temporal/      # Workflow service
-├── packages/          # Shared libraries
-│   ├── testing/       # Test utilities
-│   └── backend/       # Backend utilities
-├── scripts/           # Development scripts
-└── config files       # Root configuration
-```
-
-## Environment Setup
-
-1. Create a `.env` file in the root directory:
-
+1. Ensure your Supabase environment variables are set correctly:
    ```bash
-   cp .env.example .env
+   # In your .env file, ensure these variables are set:
+   SUPABASE_URL=https://<your-project>.supabase.co
+   SUPABASE_SERVICE_KEY=<your-service-role-key>
    ```
 
-2. Configure the following environment variables:
+   You can find these values in your Supabase project dashboard under Project Settings > API.
 
-   ```env
-   # Supabase Configuration
-   SUPABASE_URL=YOUR_SUPABASE_URL                # Local Supabase instance URL
-   SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY      # Anonymous API key
-   SUPABASE_SERVICE_KEY=YOUR_SUPABASE_SERVICE_KEY # Service role API key
-
-   # Public Supabase Configuration (Used by frontend apps)
-   PUBLIC_SUPABASE_URL=YOUR_PUBLIC_SUPABASE_URL
-   PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_SUPABASE_ANON_KEY
-
-   # Documentation Configuration
-   ASTRO_DOCS_DIR=YOUR_ASTRO_DOCS_DIR            # Path to documentation content
-
-   # GitHub Configuration (For documentation and deployment)
-   GITHUB_REPO=your-username/your-repo           # Repository identifier
-   GITHUB_BRANCH=main                            # Branch to deploy from
-   GITHUB_TOKEN=your_github_personal_access_token # GitHub access token
-
-   # Application URLs
-   PUBLIC_ADMIN_URL=YOUR_PUBLIC_ADMIN_URL        # Admin dashboard URL
-   PUBLIC_WEBSITE_URL=YOUR_PUBLIC_WEBSITE_URL     # Main website URL
-
-   # AI Service Configuration
-   OPENAI_API_KEY=your_api_key_here              # Required for CrewAI service
-
-   # Temporal Configuration
-   TEMPORAL_HOST=localhost:7233                   # Local Temporal server
-   TEMPORAL_NAMESPACE=default                     # Temporal namespace
+2. Run the test suite:
+   ```bash
+   # Run all tests
+   pnpm test
+   
+   # Run tests for a specific package
+   pnpm test --filter backend
    ```
 
-3. Default Development Values:
-   - Supabase runs locally at `http://localhost:54321`
-   - Admin dashboard runs at `http://localhost:4322`
-   - Main website runs at `http://localhost:4323`
-   - Documentation site runs at `http://localhost:4321`
-   - Temporal server runs at `localhost:7233`
+## Environment Variables
 
-4. Required Services:
-   - Local Supabase instance (started via Docker)
-   - Local Temporal server (started via Docker)
-   - OpenAI API key (for AI features)
-   - GitHub token (for documentation features)
+The project uses environment variables for configuration. Copy `.env.example` to `.env` and configure the following:
 
-:::tip[Environment Variables]
-For local development, you can use the default values for most services. However, you'll need to provide your own:
-- OpenAI API key for AI features
-- GitHub token for documentation features
-- Supabase keys if using a cloud instance
-:::
+- Supabase Configuration (from Project Settings > API):
+  - `SUPABASE_URL`: Your Supabase project URL (https://<your-project>.supabase.co)
+  - `SUPABASE_ANON_KEY`: Public API key for client-side requests
+  - `SUPABASE_SERVICE_KEY`: Service role key for server-side operations
+  - `PUBLIC_SUPABASE_URL`: Same as SUPABASE_URL (for client-side use)
+  - `PUBLIC_SUPABASE_ANON_KEY`: Same as SUPABASE_ANON_KEY (for client-side use)
 
-## Common Tasks
+- Other Configuration:
+  - Database connection settings
+  - API keys and secrets
+  - Service configurations
 
-### Adding a New Package
-
-1. Create a new directory in `packages/`
-2. Initialize with `package.json`
-3. Add to `pnpm-workspace.yaml` if needed
-4. Run `pnpm install` to update dependencies
-
-### Adding a New Application
-
-1. Create a new directory in `apps/`
-2. Initialize your application
-3. Add necessary configurations (TypeScript, ESLint, etc.)
-4. Update `turbo.json` if needed
+You can find your Supabase configuration values in your project dashboard at https://supabase.com/dashboard under Project Settings > API.

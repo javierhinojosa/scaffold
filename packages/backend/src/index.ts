@@ -10,8 +10,9 @@ export const createSupabaseClient = (supabaseUrl: string, supabaseKey: string) =
   if (!supabaseClient) {
     supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
+        persistSession: process.env.NODE_ENV !== 'test',
+        autoRefreshToken: process.env.NODE_ENV !== 'test',
+        debug: true,
       },
     });
   }

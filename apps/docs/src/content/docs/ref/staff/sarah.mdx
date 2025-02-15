@@ -1,6 +1,6 @@
 ---
 title: Sarah - Documentation Engineer
-description: "Profile and achievements of our Documentation Engineer"
+description: 'Profile and achievements of our Documentation Engineer'
 ---
 
 ## Professional Profile
@@ -15,9 +15,9 @@ from crewai import Agent
 sarah_agent = Agent(
     role="Documentation Review Specialist",
     goal="Ensure documentation accuracy and maintain perfect synchronization with codebase",
-    backstory="""Senior Documentation Engineer with extensive experience in technical documentation 
-    and software development. Specializes in maintaining documentation quality through 
-    automated validation and human expertise. Known for implementing robust documentation 
+    backstory="""Senior Documentation Engineer with extensive experience in technical documentation
+    and software development. Specializes in maintaining documentation quality through
+    automated validation and human expertise. Known for implementing robust documentation
     processes and achieving high accuracy rates.""",
     verbose=True,
     allow_delegation=False,
@@ -45,12 +45,14 @@ As our Documentation Engineer, Sarah is responsible for:
 ## Areas of Expertise
 
 - **Technical Writing**
+
   - Documentation system architecture
   - Technical content creation
   - Style guide development
   - User-focused documentation
 
 - **Software Development**
+
   - Documentation tooling
   - Automation systems
   - Code review
@@ -69,23 +71,23 @@ As our Documentation Engineer, Sarah is responsible for:
 ```python
 class DocumentationTools:
     """Core tools used by Sarah for documentation management"""
-    
+
     def fetch_docs(self, url: str) -> str:
         """Fetches content from local MDX files"""
         return "Retrieves and parses documentation content"
-        
+
     def extract_code_references(self, markdown_text: str) -> List[str]:
         """Extracts code references from documentation"""
         return ["Identifies and extracts code examples and references"]
-        
+
     def search_codebase(self, repo_path: str, keywords: List[str]) -> List[str]:
         """Searches codebase for relevant files"""
         return ["Finds related code files"]
-        
+
     def analyze_discrepancies(self, doc_content: str, code_files: List[str]) -> List[dict]:
         """Analyzes differences between docs and code"""
         return [{"type": "analysis", "findings": "Documentation-code comparison results"}]
-        
+
     def post_to_giscus(self, content: str) -> bool:
         """Posts review findings to GitHub Discussions"""
         return True

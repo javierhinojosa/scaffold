@@ -1,11 +1,11 @@
 ---
 title: Authentication
-description: How authentication works across our applications using Supabase Auth, Svelte, and Astro
+description: How authentication works across our applications using Supabase Auth and Astro
 ---
 
 ## Overview
 
-Our authentication system is built on top of [Supabase Auth](https://supabase.com/docs/guides/auth), integrated with Svelte for state management and Astro for routing. The system is implemented in our shared `@sfh/backend` package, providing a consistent, secure, and type-safe authentication experience across all applications.
+Our authentication system is built on top of [Supabase Auth](https://supabase.com/docs/guides/auth), integrated with Astro for routing and state management. The system is implemented in our shared `@sfh/backend` package, providing a consistent, secure, and type-safe authentication experience across all applications.
 
 ## Architecture
 
@@ -17,53 +17,149 @@ The core authentication functionality is centralized in our backend package:
 
 ```typescript
 // Create an auth instance
-import { createSupabaseAuth } from '@sfh/backend';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
-const auth = createSupabaseAuth(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
+export class Auth {
+  private supabaseClient: SupabaseClient<Database>;
+
+  constructor(supabaseUrl: string, supabaseKey: string) {
+    this.supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
+  }
+
+  // Core authentication methods
+  async signInWithEmail(email: string, password: string) {
+    const { data, error } = await this.supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return { user: data.user, session: data.session };
+  }
+
+  async signInWithOAuth(provider: 'github' | 'google') {
+    const { data, error } = await this.supabaseClient.auth.signInWithOAuth({
+      provider,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  async signUp(email: string, password: string) {
+    const { data, error } = await this.supabaseClient.auth.signUp({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return { user: data.user, session: data.session };
+  }
+
+  async signOut() {
+    const { error } = await this.supabaseClient.auth.signOut();
+    if (error) throw error;
+  }
+}
 ```
 
 The `Auth` class provides:
 
 - User management and sessions
-- Secure password hashing
+- OAuth integration (GitHub, Google)
 - JWT tokens for session management
 - Row Level Security (RLS) integration
 - Type-safe authentication methods
 
 ### 2. Framework Integration
 
-Our authentication system is designed to work with different frontend frameworks. Currently, we provide built-in support for Svelte stores:
+Our authentication system provides built-in support for both Svelte stores and Astro:
 
 ```typescript
-import { writable } from 'svelte/store';
-import { createSvelteAuthStore } from '@sfh/backend';
+// Svelte Store Integration
+export function createSvelteAuthStore(options: {
+  auth: Auth;
+  createStore: (value: AuthStore) => any;
+}) {
+  const store = options.createStore({
+    user: null,
+    loading: true,
+    error: null,
+  });
 
-export const authStore = createSvelteAuthStore({
-  auth,
-  createStore: writable,
-});
+  async function init() {
+    try {
+      const session = await options.auth.getSession();
+      store.set({ user: session?.user ?? null, loading: false, error: null });
+
+      options.auth.onAuthStateChange((user) => {
+        store.set({ user, loading: false, error: null });
+      });
+    } catch (error) {
+      store.set({
+        user: null,
+        loading: false,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+      });
+    }
+  }
+
+  init();
+  return store;
+}
+
+// Astro Store Integration
+export function createAstroAuthStore(auth: Auth) {
+  let store: AuthStore = {
+    user: null,
+    loading: true,
+    error: null,
+  };
+
+  async function initialize() {
+    try {
+      const session = await auth.getSession();
+      store = {
+        user: session?.user ?? null,
+        loading: false,
+        error: null,
+      };
+    } catch (error) {
+      store = {
+        user: null,
+        loading: false,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+      };
+    }
+  }
+
+  return {
+    getStore: () => store,
+    initialize,
+  };
+}
 ```
 
 ### 3. Frontend Implementation
 
-Applications can implement authentication using three main components:
+Applications can implement authentication using these main components:
 
 #### Auth Instance
 
 ```typescript
 // lib/auth.ts
-import { createSupabaseAuth } from '@sfh/backend';
+import { Auth } from '@sfh/backend';
 
-export const auth = createSupabaseAuth(
+export const auth = new Auth(
   import.meta.env.PUBLIC_SUPABASE_URL,
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 );
 
 // Re-export auth methods for convenience
-export const { signInWithEmail, signUp, signOut, getCurrentUser, onAuthStateChange } = auth;
+export const { signInWithEmail, signInWithOAuth, signUp, signOut } = auth;
 ```
 
 #### Auth Store
@@ -80,66 +176,28 @@ export const authStore = createSvelteAuthStore({
 });
 ```
 
-#### Protected Layout
+#### Login Page
 
-```svelte
-<!-- layouts/ProtectedLayout.svelte -->
-<script lang="ts">
-  import { onMount } from 'svelte';
-  import { authStore } from '../lib/stores/auth';
+```astro
+---
+// pages/login.astro
+import LoginForm from '../components/LoginForm.svelte';
+import Layout from '../layouts/Layout.astro';
+---
 
-  let mounted = false;
+<Layout title="Login">
+  <div class="min-h-screen hero bg-base-200">
+    <div class="hero-content flex-col">
+      <div class="text-center mb-8">
+        <h1 class="text-5xl font-bold">Welcome Back!</h1>
+        <p class="py-6 text-base-content/60">Sign in to access your dashboard</p>
+      </div>
 
-  onMount(() => {
-    mounted = true;
-  });
-
-  $: if (mounted && !$authStore.loading && !$authStore.user) {
-    window.location.href = '/login';
-  }
-</script>
-
-{#if $authStore.loading}
-  <div class="flex items-center justify-center min-h-screen">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <LoginForm client:load />
+    </div>
   </div>
-{:else if $authStore.user}
-  <slot />
-{/if}
+</Layout>
 ```
-
-## Implementation Details
-
-### Authentication Flow
-
-1. **Login Process**:
-
-   ```typescript
-   import { auth } from '../lib/auth';
-
-   async function handleLogin(email: string, password: string) {
-     const { user } = await auth.signInWithEmail(email, password);
-     // Handle successful login
-   }
-   ```
-
-2. **Session Management**:
-
-   - Sessions are managed by Supabase
-   - Auth store syncs with Supabase's auth state
-   - Real-time session updates through `onAuthStateChange`
-
-3. **Protected Routes**:
-   ```astro
-   ---
-   // dashboard.astro or any protected page
-   import ProtectedLayout from '../layouts/ProtectedLayout.svelte';
-   ---
-
-   <ProtectedLayout client:load>
-     <YourProtectedContent />
-   </ProtectedLayout>
-   ```
 
 ## Security Considerations
 
@@ -166,379 +224,36 @@ create policy "Users can only access their own data"
   using (auth.uid() = id);
 ```
 
-## Usage Examples
-
-### 1. Setting Up Authentication in a New App
-
-```typescript
-// 1. Create auth instance
-import { createSupabaseAuth } from '@sfh/backend';
-export const auth = createSupabaseAuth(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
-
-// 2. Create auth store (if using Svelte)
-import { writable } from 'svelte/store';
-import { createSvelteAuthStore } from '@sfh/backend';
-export const authStore = createSvelteAuthStore({
-  auth,
-  createStore: writable,
-});
-```
-
-### 2. Using Auth in Components
-
-```typescript
-<script lang="ts">
-  import { authStore } from '../lib/stores/auth';
-  import { auth } from '../lib/auth';
-
-  async function handleSignOut() {
-    await auth.signOut();
-    window.location.href = '/login';
-  }
-
-  $: user = $authStore.user;
-  $: isLoading = $authStore.loading;
-</script>
-```
-
 ## Best Practices
 
-### Authentication Setup
+1. **Authentication Setup**
 
-- Always use the shared `@sfh/backend` package for authentication
-- Configure environment variables properly
-- Initialize auth early in your application
+   - Always use the shared `@sfh/backend` package for authentication
+   - Configure environment variables properly
+   - Initialize auth early in your application
 
-### Route Protection
+2. **Route Protection**
 
-- Always wrap protected content in `ProtectedLayout`
-- Use RLS policies as the primary security mechanism
-- Never rely solely on client-side auth checks
+   - Use middleware or layout components for protected routes
+   - Use RLS policies as the primary security mechanism
+   - Never rely solely on client-side auth checks
 
-### Error Handling
+3. **Error Handling**
 
-- Always handle authentication errors gracefully
-- Provide clear feedback to users
-- Log authentication failures appropriately
+   - Always handle authentication errors gracefully
+   - Provide clear feedback to users
+   - Log authentication failures appropriately
 
-### State Management
+4. **State Management**
 
-- Use the provided auth store for state management
-- Avoid storing sensitive auth data in local storage
-- Clear auth state properly on logout
+   - Use the provided auth store for state management
+   - Avoid storing sensitive auth data in local storage
+   - Clear auth state properly on logout
 
-### Performance
-
-- Use `client:load` directive for auth components
-- Implement loading states for better UX
-- Cache auth state appropriately
-
-## Testing
-
-Our authentication system includes comprehensive test coverage across multiple levels:
-
-### Test Utilities
-
-We provide shared test utilities in the `@sfh/testing` package to help with authentication testing:
-
-```typescript
-// packages/testing/src/auth.ts
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@sfh/backend';
-
-// Define test user credentials
-export const TEST_USER = {
-  email: 'javiereh@pm.me',
-  password: 'Stewart123!',
-};
-
-// Create a test client with admin privileges
-const supabaseUrl = process.env.PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
-export const testClient = createClient<Database>(supabaseUrl, supabaseServiceKey);
-
-// Set up a test user for authentication tests
-export async function setupTestUser() {
-  // Delete the user if it exists
-  const { data: existingUser } = await testClient.auth.admin.listUsers();
-  const userToDelete = existingUser?.users.find((u) => u.email === TEST_USER.email);
-  if (userToDelete) {
-    await testClient.auth.admin.deleteUser(userToDelete.id);
-  }
-
-  // Create the test user
-  const { data, error } = await testClient.auth.admin.createUser({
-    email: TEST_USER.email,
-    password: TEST_USER.password,
-    email_confirm: true, // Auto-confirm the email
-  });
-
-  if (error) throw error;
-  return data.user;
-}
-
-// Clean up test user after tests
-export async function cleanupTestUser() {
-  const {
-    data: { users },
-  } = await testClient.auth.admin.listUsers();
-  const testUser = users.find((u) => u.email === TEST_USER.email);
-  if (testUser) {
-    await testClient.auth.admin.deleteUser(testUser.id);
-  }
-}
-```
-
-### Unit Tests
-
-Our unit tests cover all core authentication functionality:
-
-```typescript
-// packages/backend/src/__tests__/auth.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createSupabaseAuth } from '../index';
-import { setupTestUser, cleanupTestUser, TEST_USER } from '@sfh/testing/auth';
-
-describe('Auth', () => {
-  const auth = createSupabaseAuth(
-    process.env.PUBLIC_SUPABASE_URL!,
-    process.env.PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  // Set up test user before all tests
-  beforeAll(async () => {
-    await setupTestUser();
-  });
-
-  // Clean up after all tests
-  afterAll(async () => {
-    await cleanupTestUser();
-  });
-
-  it('should sign in with correct credentials', async () => {
-    const { user } = await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-    expect(user).toBeDefined();
-    expect(user?.email).toBe(TEST_USER.email);
-  });
-
-  it('should fail to sign in with incorrect password', async () => {
-    await expect(auth.signInWithEmail(TEST_USER.email, 'wrongpassword')).rejects.toThrow();
-  });
-
-  it('should sign up a new user', async () => {
-    const testEmail = 'test-signup-new@example.com';
-    const testPassword = 'TestPassword123!';
-
-    try {
-      // Clean up any existing test user first
-      const {
-        data: { users },
-      } = await auth.client.auth.admin.listUsers();
-      const existingUser = users.find((u) => u.email === testEmail);
-      if (existingUser) {
-        await auth.client.auth.admin.deleteUser(existingUser.id);
-      }
-
-      // Test signup
-      const { user } = await auth.signUp(testEmail, testPassword);
-      expect(user).toBeDefined();
-      expect(user?.email).toBe(testEmail);
-    } finally {
-      // Always clean up after test
-      const {
-        data: { users },
-      } = await auth.client.auth.admin.listUsers();
-      const testUser = users.find((u) => u.email === testEmail);
-      if (testUser) {
-        await auth.client.auth.admin.deleteUser(testUser.id);
-      }
-    }
-  });
-
-  it('should sign out successfully', async () => {
-    // Sign in and verify session
-    const {
-      data: { session },
-      error,
-    } = await auth.client.auth.signInWithPassword({
-      email: TEST_USER.email,
-      password: TEST_USER.password,
-    });
-    expect(error).toBeNull();
-    expect(session).toBeDefined();
-
-    // Test sign out
-    await auth.signOut();
-
-    // Verify session is cleared
-    const {
-      data: { session: currentSession },
-    } = await auth.client.auth.getSession();
-    expect(currentSession).toBeNull();
-  });
-
-  it('should handle auth state changes', async () => {
-    let authStateUser: any = null;
-
-    // Set up auth state listener
-    const {
-      data: { subscription },
-    } = auth.client.auth.onAuthStateChange((_event, session) => {
-      authStateUser = session?.user ?? null;
-    });
-
-    try {
-      // Test sign in state change
-      await auth.signInWithEmail(TEST_USER.email, TEST_USER.password);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(authStateUser?.email).toBe(TEST_USER.email);
-
-      // Test sign out state change
-      await auth.signOut();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(authStateUser).toBeNull();
-    } finally {
-      subscription.unsubscribe();
-    }
-  });
-});
-```
-
-### Test Configuration
-
-We use Vitest for testing, with specific configuration for auth tests:
-
-```typescript
-// packages/backend/vitest.config.ts
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
-
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'node',
-    setupFiles: [resolve(__dirname, '../testing/src/setup.ts')],
-    environmentMatchGlobs: [['**/*.test.ts', 'node']],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    deps: {
-      inline: ['@sfh/testing'],
-    },
-  },
-});
-```
-
-### Test Environment Setup
-
-Our test setup file handles environment variables and cleanup:
-
-```typescript
-// packages/testing/src/setup.ts
-import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/svelte';
-import dotenv from 'dotenv';
-
-// Load test environment variables
-dotenv.config({ path: '.env.test' });
-
-// Clean up after each test
-afterEach(() => {
-  cleanup();
-});
-```
-
-### Test Best Practices
-
-1. **User Management**:
-
-   - Use `setupTestUser` and `cleanupTestUser` for consistent test user handling
-   - Clean up test users in `finally` blocks to ensure cleanup even if tests fail
-   - Use unique email addresses for signup tests to avoid conflicts
-
-2. **Session Handling**:
-
-   - Always verify both successful operations and error cases
-   - Check session state after sign in/out operations
-   - Use proper error handling with `expect().rejects.toThrow()`
-
-3. **State Changes**:
-
-   - Properly handle auth state subscriptions
-   - Always unsubscribe from listeners in `finally` blocks
-   - Use timeouts when testing async state changes
-
-4. **Test Organization**:
-
-   - Group related tests using `describe` blocks
-   - Use clear, descriptive test names
-   - Follow the Arrange-Act-Assert pattern
-   - Clean up resources in `afterAll` and `finally` blocks
-
-5. **Environment Setup**:
-   - Use `.env.test` for test-specific environment variables
-   - Never use production credentials in tests
-   - Set up proper test utilities in a shared package
-
-### Running Tests
-
-To run authentication tests:
-
-1. Set up environment variables in `.env.test`:
-
-```bash
-PUBLIC_SUPABASE_URL="your-test-project-url"
-PUBLIC_SUPABASE_ANON_KEY="your-test-anon-key"
-SUPABASE_SERVICE_KEY="your-test-service-key"
-```
-
-2. Run the tests:
-
-```bash
-# Run all tests
-pnpm run test
-
-# Run tests in watch mode
-pnpm run test:watch
-
-# Run specific test file
-pnpm run test src/__tests__/auth.test.ts
-```
-
-### Common Testing Patterns
-
-1. **Testing Protected Routes**:
-
-```typescript
-test('should protect routes', async ({ page }) => {
-  await page.goto('/dashboard');
-  await expect(page).toHaveURL('/login');
-});
-```
-
-2. **Testing Error States**:
-
-```typescript
-test('should handle invalid credentials', async () => {
-  await expect(auth.signInWithEmail('invalid@email.com', 'wrongpass')).rejects.toThrow();
-});
-```
-
-3. **Testing State Changes**:
-
-```typescript
-test('should update auth state', async () => {
-  const {
-    data: { subscription },
-  } = auth.client.auth.onAuthStateChange(callback);
-  try {
-    // Test state changes
-  } finally {
-    subscription.unsubscribe();
-  }
-});
-```
+5. **Performance**
+   - Use `client:load` directive for auth components
+   - Implement loading states for better UX
+   - Cache auth state appropriately
 
 ## Troubleshooting
 
