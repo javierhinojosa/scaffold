@@ -6,9 +6,10 @@
       "@/*": ["src/*"],
       "@sfh/*": ["../../packages/*/src"]
     },
-    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "astro/client"],
     "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": ["src", "e2e"]
 }

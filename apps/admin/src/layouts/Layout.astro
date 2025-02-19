@@ -1,6 +1,10 @@
 ---
+const { isLoggedIn } = Astro.locals;
+
 import '../styles/global.css';
 import ThemeToggle from '../components/ThemeToggle.svelte';
+
+
 ---
 
 <html lang="en">
@@ -18,10 +22,16 @@ import ThemeToggle from '../components/ThemeToggle.svelte';
     <meta name="generator" content={Astro.generator} />
     <title>Admin Dashboard</title>
   </head>
-  <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
-    <!-- Theme toggle -->
-    <ThemeToggle client:load />
+  {isLoggedIn ? (
+    <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
+      <!-- Theme toggle -->
+      <ThemeToggle client:load />
 
     <slot />
   </body>
+  ) : (
+    <body>
+      <h1>Please login</h1>
+    </body>
+  )}
 </html>

@@ -1,0 +1,43 @@
+---
+import { auth } from '../lib/auth';
+import { authStore } from '../lib/stores/auth';
+import type { Session } from '@supabase/supabase-js';
+
+let isLoggedIn = false;
+
+// Initialize auth session
+const { data: { session } } = await auth.client.auth.getSession();
+if (session) {
+  isLoggedIn = true;
+  authStore.set({ loading: false, user: session.user, error: null });
+}
+---
+
+<div class="fixed top-4 right-4">
+  <div class="badge badge-lg gap-2 {isLoggedIn ? 'badge-success' : 'badge-ghost'}">
+    {isLoggedIn ? '✓ Logged in' : '○ Not logged in'}
+  </div>
+</div>
+
+<script>
+  import { authStore } from '../lib/stores/auth';
+  
+  function initLoginStatus() {
+    const badge = document.querySelector('.badge');
+    if (!badge) return;
+    
+    authStore.subscribe(({ user }) => {
+      if (user) {
+        badge.classList.remove('badge-ghost');
+        badge.classList.add('badge-success');
+        badge.textContent = '✓ Logged in';
+      } else {
+        badge.classList.remove('badge-success');
+        badge.classList.add('badge-ghost');
+        badge.textContent = '○ Not logged in';
+      }
+    });
+  }
+
+  initLoginStatus();
+</script>

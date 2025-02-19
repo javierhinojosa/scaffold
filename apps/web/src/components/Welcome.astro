@@ -1,9 +1,11 @@
 ---
 import astroLogo from '../assets/astro.svg';
 import background from '../assets/background.svg';
+import LoginStatus from './LoginStatus.astro';
 ---
 
 <div id="container">
+  <LoginStatus />
   <img id="background" src={background.src} alt="" fetchpriority="high" />
   <main>
     <section id="hero">

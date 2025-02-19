@@ -1,12 +1,8 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { AdminUser } from '../lib/security/types';
+/// <reference types="astro/client" />
+import type { AuthLocals } from './auth';
 
 declare module 'astro' {
-  interface Locals {
-    user: AdminUser | null;
-    supabase: SupabaseClient;
-    csrfToken?: string;
-  }
+  interface Locals extends AuthLocals {}
 
   interface APIContext {
     response: Response;

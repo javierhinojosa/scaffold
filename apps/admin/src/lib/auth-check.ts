@@ -10,47 +10,54 @@ interface AuthState {
 const PROTECTED_ROUTES = ['/dashboard'];
 
 export function initAuthCheck(currentPath: string) {
-  let mounted = false;
   const loadingEl = document.getElementById('loading');
   const contentEl = document.getElementById('content');
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => currentPath.startsWith(route));
   const isLoginPage = currentPath === '/login';
 
-  // Initialize auth session
   const initSession = async () => {
     try {
       const {
         data: { session },
       } = await auth.client.auth.getSession();
 
+      authStore.update(state => ({
+        ...state,
+        loading: false,
+        user: session?.user || null
+      }));
+
       if (!session && isProtectedRoute) {
         window.location.href = '/login';
         return;
       }
 
-      // If logged in and on login page, redirect to dashboard
       if (session && isLoginPage) {
         window.location.href = '/dashboard';
         return;
       }
     } catch (error) {
-      // Only log error if on protected route
       if (isProtectedRoute) {
         console.error('Error checking auth session:', error);
       }
+      authStore.update(state => ({
+        ...state,
+        loading: false,
+        user: null
+      }));
     }
   };
 
+  authStore.update(state => ({ ...state, loading: true }));
   initSession();
 
+  // Subscribe to auth store changes
   authStore.subscribe(({ loading, user }: AuthState) => {
-    if (!mounted) {
-      mounted = true;
-      return;
-    }
-
-    if (!loading) {
+    if (loading) {
+      loadingEl?.classList.remove('hidden');
+      contentEl?.classList.add('hidden');
+    } else {
       loadingEl?.classList.add('hidden');
       contentEl?.classList.remove('hidden');
 
@@ -61,4 +68,4 @@ export function initAuthCheck(currentPath: string) {
       }
     }
   });
-}
+} 

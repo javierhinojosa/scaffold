@@ -1,9 +1,11 @@
 ---
 import LoginForm from '../components/LoginForm.svelte';
 import Layout from '../layouts/Layout.astro';
+
+// Use requireAuth to handle auth check and redirection
 ---
 
-<Layout title="Login - Admin Dashboard">
+<Layout requireAuth>
   <div class="min-h-screen hero bg-base-200">
     <div class="hero-content flex-col">
       <div class="text-center mb-8">
@@ -15,3 +17,8 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </div>
 </Layout>
+
+<script>
+  import { initAuthCheck } from '../lib/auth-check';
+  initAuthCheck(window.location.pathname);
+</script>
