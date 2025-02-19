@@ -1,120 +1,77 @@
-import { defineMiddleware } from 'astro/middleware';
-import { createClient } from './lib/auth';
-import { AdminAuthService } from './lib/security/admin-auth';
-import { defaultSecurityConfig } from './lib/security/types';
-import {
-  handleCsrf,
-  checkRateLimit,
-  setSecurityHeaders,
-  hashIp,
-  setCsrfToken,
-  verifyJWT,
-} from './lib/security/utils';
-import type { AuthError } from './lib/security/types';
-import type { APIContext } from 'astro';
-import '../types/astro';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-// Extend Astro's Locals type
-declare module 'astro' {
-  interface Locals {
-    user: AdminUser | null;
-    supabase: SupabaseClient;
-    csrfToken?: string;
-  }
-}
+export async function onRequest(
+  { locals, cookies, url }: { locals: Record<string, any>; cookies: Record<string, any>; url: URL },
+  next: () => Promise<Response>
+) {
 
-export const onRequest = defineMiddleware(async (context: APIContext, next) => {
-  const config = defaultSecurityConfig;
-
-  // Set security headers
-  setSecurityHeaders(context.response.headers, config);
-
-  // Create Supabase client with context cookies
-  const supabase = createClient({
-    get: (name) => context.cookies.get(name)?.value,
-    set: (name, value, options) => context.cookies.set(name, value, options),
-  });
-  context.locals.supabase = supabase;
-
-  const adminAuth = new AdminAuthService(supabase);
-
-  // Handle public routes
-  if (context.url.pathname === '/login') {
-    // Rate limit login attempts
-    const hashedIp = hashIp(context.clientAddress);
-    checkRateLimit(config, hashedIp);
-
-    // Set CSRF token for the login form
-    const csrfToken = setCsrfToken(config, context.cookies);
-    context.locals.csrfToken = csrfToken;
-    return next();
-  }
-
-  if (context.url.pathname === '/register' || context.url.pathname === '/forgot-password') {
-    return next();
-  }
-
-  try {
-    // Validate CSRF token for non-GET requests
-    handleCsrf(
-      config,
-      context.cookies,
-      context.request.method,
-      context.url.pathname,
-      context.request.headers
-    );
-
-    // Get JWT from cookie
-    const jwt = context.cookies.get('sb-access-token')?.value;
-    if (!jwt) {
-      return context.redirect('/login?redirect=' + encodeURIComponent(context.url.pathname));
-    }
-
-    // Verify JWT and get user claims
-    const { sub: userId, exp: expiresAt } = await verifyJWT(jwt);
-    if (!userId || !expiresAt || Date.now() >= expiresAt * 1000) {
-      // Clear invalid token
-      context.cookies.delete('sb-access-token');
-      return context.redirect('/login?error=session_expired');
-    }
-
-    // Get and validate admin user
-    const adminUser = await adminAuth.getAdminUser(userId);
-    context.locals.user = adminUser;
-
-    // Set new CSRF token for the next request
-    const newCsrfToken = setCsrfToken(config, context.cookies);
-    context.locals.csrfToken = newCsrfToken;
-
-    const response = await next();
-
-    // Add security headers to the response
-    setSecurityHeaders(response.headers, config);
-
-    return response;
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-
-    if ((error as AuthError).code === 'INVALID_CSRF') {
-      return new Response('Invalid CSRF token', { status: 403 });
-    }
-
-    if ((error as AuthError).code === 'RATE_LIMITED') {
-      return new Response('Too many attempts, please try again later', { status: 429 });
-    }
-
-    if ((error as AuthError).code === 'INSUFFICIENT_PERMISSIONS') {
-      return new Response('Unauthorized', { status: 403 });
-    }
-
-    if ((error as AuthError).code === 'SESSION_EXPIRED') {
-      const userId = context.locals.user?.id;
-      if (userId) {
-        await adminAuth.signOut(userId);
+  let session = null;
+  const supabase = createServerClient(
+    'https://tgynpeuajacrkzgkcsfy.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRneW5wZXVhamFjcmt6Z2tjc2Z5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk1Njk4NDksImV4cCI6MjA1NTE0NTg0OX0.z_Zt7whfq0UR0rCyysfjq1lDeu_zK4JD9b1MzplCYOg',
+    {
+      cookies: {
+        get: (key: string) => cookies.get(key)?.value,
+        set: (key: string, value: string, options: CookieOptions) => cookies.set(key, value, options),
+        remove: (key: string, options: CookieOptions) => cookies.delete(key, options),
+      },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
       }
-      return context.redirect('/login?error=session_expired');
     }
+  );
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-    return context.redirect('/login?error=auth_error');
+  // if (error || !user) {
+  //   return Response.redirect(new URL('/auth/login', url));
+  // }
+
+  if (user) {
+    console.log('User is logged in', user.id);
+    locals.isLoggedIn = true;
+    locals.message = 'User is logged in';
+    locals.email = user.email;
+    locals.user_id = user.id;
+
+    // const { data: profileData } = await supabase
+    //   .from('profiles')
+    //   .select('full_name, dark_mode, avatar_url')
+    //   .eq('id', user.id)
+    //   .single();
+
+    // locals.full_name = profileData?.full_name;
+    // locals.dark_mode = profileData?.dark_mode;
+    // locals.avatar_url = profileData?.avatar_url;
+
+    // Get the role_ids from the user_roles table
+    // const { data: userRolesData } = await supabase
+    //   .from('user_roles')
+    //   .select('role_id')
+    //   .eq('user_id', user.id);
+
+    // if (userRolesData) {
+    //   // Get the role names from the roles table
+    //   const roleIds = userRolesData.map((userRole) => userRole.role_id);
+    //   const { data: rolesData } = await supabase
+    //     .from('roles')
+    //     .select('name')
+    //     .in('id', roleIds);
+
+    //   if (rolesData) {
+    //     locals.roles = rolesData.map((role) => role.name);
+    //   }
+    // }
+
+    
+  } else {
+    console.log('No active session');
+    locals.isLoggedIn = false;
+    locals.message = 'No active session';
+    locals.email = null;
   }
-});
+
+
+  return next();
+}

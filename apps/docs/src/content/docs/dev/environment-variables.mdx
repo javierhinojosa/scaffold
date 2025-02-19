@@ -1,0 +1,291 @@
+---
+title: Environment Variables
+description: Complete guide to environment variables used across the monorepo
+---
+
+## Overview
+
+This project uses environment variables for configuration across different applications and services. This guide provides a comprehensive list of all environment variables and how to set them up.
+
+## Quick Start
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file with your values
+3. For CrewAI development, also copy its environment file:
+   ```bash
+   cp apps/crewai/development/.env.example apps/crewai/development/.env
+   ```
+
+## Required Variables
+
+### Supabase Configuration
+
+These variables are required for database and authentication functionality:
+
+```bash
+# Core Supabase Configuration (for server-side operations)
+SUPABASE_URL=your_project_url            # URL of your Supabase project
+SUPABASE_SERVICE_KEY=your_service_key    # Service role key for admin operations
+SUPABASE_ANON_KEY=your_anon_key         # Anon key for public operations
+
+# Public Supabase Configuration (for client-side operations)
+PUBLIC_SUPABASE_URL=same_as_supabase_url      # Same as SUPABASE_URL
+PUBLIC_SUPABASE_ANON_KEY=same_as_anon_key     # Same as SUPABASE_ANON_KEY
+```
+
+You can find these values in your Supabase project dashboard under Project Settings > API.
+
+### GitHub Integration
+
+Required for documentation features and GitHub integration:
+
+```bash
+# GitHub Configuration
+GITHUB_REPO=your-username/your-repo           # Your GitHub repository
+GITHUB_BRANCH=main                            # Branch to use (usually main)
+GITHUB_TOKEN=your_personal_access_token       # GitHub Personal Access Token
+```
+
+### Public URLs
+
+Used for cross-application communication:
+
+```bash
+# Public URLs
+PUBLIC_ADMIN_URL=http://localhost:4322        # URL for admin dashboard
+PUBLIC_WEBSITE_URL=http://localhost:3000      # URL for main website
+```
+
+## Application-Specific Variables
+
+### Documentation Site
+
+Variables specific to the documentation site:
+
+```bash
+# Documentation Configuration
+ASTRO_DOCS_DIR=./apps/docs/src/content/docs  # Path to documentation content
+```
+
+### CrewAI Development
+
+Variables required for the CrewAI service:
+
+```bash
+# CrewAI Configuration (in apps/crewai/development/.env)
+ANTHROPIC_API_KEY=your_anthropic_api_key     # Required for documentation quality checks
+GITHUB_TOKEN=your_github_token               # Same as root GITHUB_TOKEN
+```
+
+### Database Configuration
+
+Variables required for database access:
+
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/scaffold
+```
+
+### Authentication
+
+Variables required for authentication:
+
+```bash
+# Authentication
+SUPABASE_URL=http://localhost:54321
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+### Application URLs
+
+Variables for configuring application URLs:
+
+```bash
+# Application URLs
+PUBLIC_ADMIN_URL=http://localhost:4322
+PUBLIC_WEBSITE_URL=http://localhost:4323
+```
+
+### GitHub Integration
+
+Variables required for GitHub integration:
+
+```bash
+# GitHub Configuration
+PUBLIC_GITHUB_TOKEN=your-github-token
+PUBLIC_GITHUB_REPO=yourusername/yourrepo
+PUBLIC_GITHUB_BRANCH=main
+```
+
+## Environment-Specific Variables
+
+### Development
+
+Development environment variables:
+
+```bash
+NODE_ENV=development
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/scaffold
+SUPABASE_URL=http://localhost:54321
+```
+
+### Production
+
+Production environment variables:
+
+```bash
+NODE_ENV=production
+DATABASE_URL=your-production-db-url
+SUPABASE_URL=your-production-supabase-url
+```
+
+## Required Variables by Application
+
+### Admin Dashboard
+
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+### Website
+
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+### Documentation
+
+- `PUBLIC_GITHUB_TOKEN`
+- `PUBLIC_GITHUB_REPO`
+- `PUBLIC_GITHUB_BRANCH`
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+## Environment Files
+
+The project uses several environment files:
+
+- `.env` - Main environment file (local development)
+- `.env.example` - Template for the main environment file
+- `.env.production` - Production environment variables
+- `.env.test` - Test environment variables
+- `apps/crewai/development/.env` - CrewAI-specific variables
+
+## Best Practices
+
+1. **Security**
+   - Never commit `.env` files to version control
+   - Use different values for development and production
+   - Keep service keys secure and never expose them client-side
+
+2. **Organization**
+   - Group related variables together
+   - Use clear, descriptive variable names
+   - Document any new variables you add
+
+3. **Development Workflow**
+   - Copy `.env.example` to start
+   - Update variables as needed
+   - Test with both development and production values
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Authentication Errors**
+   - Verify Supabase URL and keys are correct
+   - Ensure public variables match their private counterparts
+   - Check for trailing spaces in values
+
+2. **Missing Variables**
+   - Compare your `.env` with `.env.example`
+   - Check application-specific requirements
+   - Look for console errors mentioning environment variables
+
+3. **Integration Issues**
+   - Verify GitHub token has required permissions
+   - Check URL formats and protocols
+   - Ensure all required variables are set
+
+## Adding New Variables
+
+When adding new environment variables:
+
+1. Add them to `.env.example`
+2. Document them in this guide
+3. Update relevant application configurations
+4. Notify team members of the changes
+
+## Variable Reference
+
+Here's a quick reference of all environment variables grouped by purpose:
+
+### Authentication & Database
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY`
+- `SUPABASE_ANON_KEY`
+- `PUBLIC_SUPABASE_URL`
+- `PUBLIC_SUPABASE_ANON_KEY`
+
+### GitHub Integration
+- `GITHUB_REPO`
+- `GITHUB_BRANCH`
+- `GITHUB_TOKEN`
+
+### Application URLs
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+### Documentation
+- `ASTRO_DOCS_DIR`
+
+### Tunneling & Webhooks
+- `PUBLIC_PINGGY_DOMAIN` # Base domain for Pinggy tunnels
+
+### AI Services
+- `ANTHROPIC_API_KEY` (CrewAI only)
+
+### Database Configuration
+- `DATABASE_URL`
+
+### Authentication
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+### Application URLs
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+### GitHub Integration
+- `PUBLIC_GITHUB_TOKEN`
+- `PUBLIC_GITHUB_REPO`
+- `PUBLIC_GITHUB_BRANCH`
+
+### Environment-Specific Variables
+- `NODE_ENV`
+- `DATABASE_URL`
+- `SUPABASE_URL`
+
+### Required Variables by Application
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL`
+
+### Documentation
+- `PUBLIC_GITHUB_TOKEN`
+- `PUBLIC_GITHUB_REPO`
+- `PUBLIC_GITHUB_BRANCH`
+- `PUBLIC_ADMIN_URL`
+- `PUBLIC_WEBSITE_URL` 

@@ -48,14 +48,8 @@ export type Database = {
         };
       };
     };
-    Views: {
-      // Add view types here if you have any
-    };
-    Functions: {
-      // Add function types here if you have any
-    };
-    Enums: {
-      // Add enum types here if you have any
-    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
   };
 };

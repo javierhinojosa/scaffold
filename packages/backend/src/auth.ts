@@ -101,9 +101,9 @@ export type CreateAuthStore<T> = (options: {
 }) => T;
 
 // Example implementation for Svelte
-export function createSvelteAuthStore(options: {
+export function createSvelteAuthStore<T extends { set: (value: AuthStore) => void }>(options: {
   auth: Auth;
-  createStore: (value: AuthStore) => any;
+  createStore: (value: AuthStore) => T;
 }) {
   const store = options.createStore({
     user: null,

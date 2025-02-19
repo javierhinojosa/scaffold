@@ -47,7 +47,7 @@ export function createAuthMiddleware(auth: Auth) {
         session,
       };
 
-      return context.next();
+      return authenticatedContext.next();
     } catch (error) {
       console.error('Auth middleware error:', error);
 
