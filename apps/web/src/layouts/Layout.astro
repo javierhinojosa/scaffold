@@ -1,13 +1,14 @@
 ---
 import '../styles/global.css';
 import ThemeToggle from '../components/ThemeToggle.svelte';
+import LoginStatus from '../components/LoginStatus.astro';
 
 interface Props {
-  requireAuth?: boolean;
+  title: string;
+  isLoggedIn: boolean;
 }
 
-const { requireAuth = false } = Astro.props;
-const isLoginPage = Astro.url.pathname === '/login';
+const { title, isLoggedIn } = Astro.props;
 ---
 
 <!doctype html>
@@ -24,33 +25,68 @@ const isLoginPage = Astro.url.pathname === '/login';
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Website</title>
+    <title>{title}</title>
   </head>
-  <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
-    <!-- Theme toggle -->
+  <body data-logged-in={isLoggedIn ? 'true' : ''}>
     <ThemeToggle client:load />
-
-    {
-      requireAuth ? (
-        <div id="auth-wrapper">
-          <div id="loading" class="flex items-center justify-center min-h-screen">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400" />
-          </div>
-          <div id="content" class="hidden">
-            <slot />
-          </div>
-        </div>
-      ) : (
-        <slot />
-      )
-    }
-
-    {
-      requireAuth && (
-        <script>
-          import {initAuthCheck} from '../lib/auth-check'; initAuthCheck(window.location.pathname);
-        </script>
-      )
-    }
+    <LoginStatus isLoggedIn={isLoggedIn} />
+    <main>
+      <slot />
+    </main>
   </body>
 </html>
+
+<script>
+  import { supabase } from '../utils/supabaseBrowser';
+  import { accessTokenName, refreshTokenName } from '../utils/config';
+
+  function getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() ?? null;
+    return null;
+  }
+
+  function setCookie(name: string, value: string, maxAge?: number) {
+    const options = [
+      `${name}=${value}`,
+      'path=/',
+      'SameSite=Lax',
+      'secure'
+    ];
+    if (maxAge) options.push(`max-age=${maxAge}`);
+    document.cookie = options.join('; ');
+  }
+
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+      // Clear cookies and update UI immediately
+      setCookie(accessTokenName, '', 0);
+      setCookie(refreshTokenName, '', 0);
+      document.body.dataset.loggedIn = '';
+      
+      // Only redirect if we're not already on a public route
+      const publicRoutes = ['/login', '/signup'];
+      const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+      if (!isPublicRoute) {
+        window.location.href = '/login';
+      }
+    } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (!session) return;
+      
+      // Set cookies and update UI immediately
+      const maxAge = 100 * 365 * 24 * 60 * 60; // 100 years
+      setCookie(accessTokenName, session.access_token, maxAge);
+      setCookie(refreshTokenName, session.refresh_token, maxAge);
+      document.body.dataset.loggedIn = 'true';
+      
+      // Only redirect if we're on a public route
+      const publicRoutes = ['/login', '/signup'];
+      const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+      if (isPublicRoute) {
+        window.location.href = '/dashboard';
+      }
+    }
+  });
+</script>

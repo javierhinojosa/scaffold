@@ -1,24 +1,20 @@
 ---
-import LoginForm from '../components/LoginForm.svelte';
+import LoginForm from 'shared/auth/components/LoginForm.svelte';
 import Layout from '../layouts/Layout.astro';
 
-// Use requireAuth to handle auth check and redirection
+// Initialize auth session and check if already logged in
+const { isLoggedIn = false } = Astro.locals;
 ---
 
-<Layout requireAuth>
+<Layout title="Login" isLoggedIn={isLoggedIn}>
   <div class="min-h-screen hero bg-base-200">
     <div class="hero-content flex-col">
       <div class="text-center mb-8">
         <h1 class="text-5xl font-bold">Welcome Back!</h1>
-        <p class="py-6 text-base-content/60">Sign in to access your admin dashboard</p>
+        <p class="py-6 text-base-content/60">Sign in to access your dashboard</p>
       </div>
 
       <LoginForm client:load />
     </div>
   </div>
 </Layout>
-
-<script>
-  import { initAuthCheck } from '../lib/auth-check';
-  initAuthCheck(window.location.pathname);
-</script>

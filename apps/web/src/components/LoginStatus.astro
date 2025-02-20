@@ -1,43 +1,47 @@
 ---
-import { auth } from '../lib/auth';
-import { authStore } from '../lib/stores/auth';
-import type { Session } from '@supabase/supabase-js';
-
-let isLoggedIn = false;
-
-// Initialize auth session
-const { data: { session } } = await auth.client.auth.getSession();
-if (session) {
-  isLoggedIn = true;
-  authStore.set({ loading: false, user: session.user, error: null });
+interface Props {
+  isLoggedIn: boolean;
 }
+
+const { isLoggedIn } = Astro.props;
 ---
 
 <div class="fixed top-4 right-4">
-  <div class="badge badge-lg gap-2 {isLoggedIn ? 'badge-success' : 'badge-ghost'}">
+  <div class="badge badge-lg gap-2" data-login-status>
     {isLoggedIn ? '✓ Logged in' : '○ Not logged in'}
   </div>
 </div>
 
 <script>
-  import { authStore } from '../lib/stores/auth';
-  
-  function initLoginStatus() {
-    const badge = document.querySelector('.badge');
+  function updateBadge(isLoggedIn: boolean) {
+    const badge = document.querySelector('[data-login-status]');
     if (!badge) return;
-    
-    authStore.subscribe(({ user }) => {
-      if (user) {
-        badge.classList.remove('badge-ghost');
-        badge.classList.add('badge-success');
-        badge.textContent = '✓ Logged in';
-      } else {
-        badge.classList.remove('badge-success');
-        badge.classList.add('badge-ghost');
-        badge.textContent = '○ Not logged in';
-      }
-    });
+
+    if (isLoggedIn) {
+      badge.classList.remove('badge-ghost');
+      badge.classList.add('badge-success');
+      badge.textContent = '✓ Logged in';
+    } else {
+      badge.classList.remove('badge-success');
+      badge.classList.add('badge-ghost');
+      badge.textContent = '○ Not logged in';
+    }
   }
 
-  initLoginStatus();
+  // Update badge when data-logged-in attribute changes on body
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'data-logged-in') {
+        const isLoggedIn = document.body.dataset.loggedIn === 'true';
+        updateBadge(isLoggedIn);
+      }
+    });
+  });
+
+  // Start observing
+  observer.observe(document.body, { attributes: true });
+
+  // Set initial state
+  const initialState = document.body.dataset.loggedIn === 'true';
+  updateBadge(initialState);
 </script>

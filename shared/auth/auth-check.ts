@@ -61,4 +61,4 @@ export function initAuthCheck(currentPath: string) {
       }
     }
   });
-}
+} 

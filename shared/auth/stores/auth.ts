@@ -5,4 +5,4 @@ import { createSvelteAuthStore } from '@sfh/backend';
 export const authStore = createSvelteAuthStore({
   auth,
   createStore: writable,
-});
+}); 

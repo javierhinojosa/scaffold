@@ -1,11 +1,27 @@
 ---
 import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import { getUser } from '../utils/supabaseServer';
+import { accessTokenName, refreshTokenName } from '../utils/config';
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+
+// Get auth state server-side
+const accessToken = Astro.cookies.get(accessTokenName)?.value;
+const refreshToken = Astro.cookies.get(refreshTokenName)?.value;
+const userData = await getUser({ 
+  accessToken, 
+  refreshToken,
+  cookies: {
+    get: (name) => Astro.cookies.get(name)?.value,
+    set: (name, value, options) => Astro.cookies.set(name, value, options),
+    remove: (name, options) => Astro.cookies.delete(name, options),
+  }
+});
+const isLoggedIn = !!userData;
 ---
 
-<Layout>
+<Layout title="Welcome" {isLoggedIn}>
   <Welcome />
 </Layout>

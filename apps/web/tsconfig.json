@@ -4,11 +4,25 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@sfh/*": ["../../packages/*/src"]
+      "shared/*": ["../../shared/*"]
     },
-    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "svelte"],
     "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "isolatedModules": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noEmit": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "e2e"]
+  "include": ["src/**/*", "../../shared/**/*"],
+  "references": [
+    { "path": "../../shared" },
+    { "path": "../../packages/backend" }
+  ]
 }

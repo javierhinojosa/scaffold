@@ -1,55 +1,135 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro'
+import Nav from '../components/Nav.astro'
+import { getUser } from '../utils/supabaseServer'
+import { accessTokenName, refreshTokenName } from '../utils/config'
+
+const accessToken = Astro.cookies.get(accessTokenName)?.value
+const refreshToken = Astro.cookies.get(refreshTokenName)?.value
+
+const userData = await getUser({ 
+  accessToken, 
+  refreshToken,
+  cookies: {
+    get: (name) => Astro.cookies.get(name)?.value,
+    set: (name, value, options) => Astro.cookies.set(name, value, options),
+    remove: (name, options) => Astro.cookies.delete(name, options),
+  }
+});
+
+// the profile page is private 
+if (!userData) {
+    return Astro.redirect('/login')
+}
+
+const isLoggedIn = !!userData;
 ---
 
-<Layout requireAuth>
-  <main class="container mx-auto px-4 py-8">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-800">
-      <nav class="bg-white dark:bg-gray-900 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between h-16">
-            <div class="flex items-center">
-              <h1 class="text-xl font-semibold dark:text-white">Admin Dashboard</h1>
-            </div>
-            <div class="flex items-center">
-              <button
-                onclick="window.handleSignOut()"
-                class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+<Layout title="Profile" {isLoggedIn}>
+    <Nav activeUrl='profile' {isLoggedIn} />
 
-      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 py-6 sm:px-0">
-          <div
-            class="border-4 border-dashed border-gray-200 dark:border-gray-700 rounded-lg h-96 p-4 dark:bg-gray-900"
-          >
-            <h2 class="text-2xl font-bold mb-4 dark:text-white">Welcome to the Dashboard</h2>
-            <p class="text-gray-600 dark:text-gray-400">
-              This is a protected page. You need to be authenticated to view this content.
-            </p>
-          </div>
+    <h2> Profile </h2>
+    <form>
+        <input type='hidden' id='id' name='id' value={ userData.id } >
+        <input type='hidden' id='avatar_url' name='avatar_url' value={ userData.avatar_url } >
+        <img id='avatar-image' />
+
+        <div>
+            <input
+                type="file"
+                id="avatar"
+                accept="image/*"
+            />
         </div>
-      </main>
-    </div>
-  </main>
+
+         <div class='input-wrap'>
+             <label for='email'>email:</label>
+             <input disabled id='email' name='email' value={ userData.email } >    
+         </div>
+         <div class='input-wrap'>
+             <label for='username'>username:</label>
+             <input id='username' name='username' value={ userData.username } >
+         </div>
+         <div class='input-wrap'>
+             <label for='website'>website:</label>
+             <input id='website' name='website' value={ userData.website } >
+         </div>
+        <button>Submit</button>
+    </form>
 </Layout>
+<style>
+.input-wrap {
+    display: flex;
+    gap: .5rem;
+    padding: .3rem 0;
+    align-items: center;
+    width: 30vw;
+    flex: 1
+}
+input{
+    height: 1rem;
+    flex: 1
+}
+img {
+    width: 40%
+}
+#avatar {
+    height: 1.6rem;
+}
 
+</style>
 <script>
-  import { auth } from '../lib/auth';
+import { supabase } from '../utils/supabaseBrowser'
+const form = document.querySelector('form') as HTMLFormElement
+const avatarImg = document.querySelector('#avatar-image') as HTMLImageElement
+const avatarUrl = document.querySelector('#avatar_url') as HTMLInputElement
+const avatarInput = document.querySelector('#avatar')  as HTMLInputElement
 
-  declare global {
-    interface Window {
-      handleSignOut: () => Promise<void>;
+form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const updates = Object.fromEntries(new FormData(e.target as HTMLFormElement).entries())
+
+    const res = await supabase.from('profiles').upsert(updates)
+    const {error} = res
+
+    if (error) {
+        alert(`Error ${JSON.stringify(error, null, 2)}`)
     }
-  }
 
-  window.handleSignOut = async () => {
-    await auth.signOut();
-    window.location.href = '/login';
-  };
+})
+
+const showImg = async (path: string) => {
+    const { data, error } = await supabase.storage.from('avatars').download(path)
+    if (error) {
+        alert(`Error ${JSON.stringify(error, null, 2)}`)
+    }
+    const downloadUrl = URL.createObjectURL(data as Blob)
+    avatarImg.src = downloadUrl
+}
+// show image on start up if avatar_url is defined
+if (avatarUrl.value) {
+    showImg(avatarUrl.value)
+}
+
+avatarInput.addEventListener('change', async (e) => {
+    const [file] = (e.target as HTMLInputElement).files ?? []
+    if (!file){
+        alert('No file available')
+        return
+    }
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${URL.createObjectURL(new Blob([])).slice(-36)}.${fileExt}`
+    let uploadRes = await supabase.storage.from('avatars').upload(fileName, file)
+    const { error, data } = uploadRes
+    if (error) {
+        alert(`Error ${JSON.stringify(error, null, 2)}`)
+    }
+    if (data) {
+        const { path } = data
+        showImg(path)
+        avatarUrl.value = path
+    }
+    
+})
 </script>
