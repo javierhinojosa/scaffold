@@ -1,277 +1,358 @@
 ---
 title: Authentication
-description: How authentication works across our applications using Supabase Auth and Astro
+description: How authentication works across our applications using Supabase Auth, Astro, and cookie-based sessions
 ---
 
 ## Overview
 
-Our authentication system is built on top of [Supabase Auth](https://supabase.com/docs/guides/auth), integrated with Astro for routing and state management. The system is implemented in our shared `@sfh/backend` package, providing a consistent, secure, and type-safe authentication experience across all applications.
+Our authentication system is built on top of [Supabase Auth](https://supabase.com/docs/guides/auth), integrated with Astro for server-side rendering and cookie-based session management. The system uses a combination of server-side middleware and client-side state management to provide a secure and seamless authentication experience.
 
 ## Architecture
 
-The authentication system consists of several key components working together:
+The authentication system consists of several key components:
 
-### 1. Backend Authentication (`@sfh/backend`)
+### 1. Server-Side Authentication
 
-The core authentication functionality is centralized in our backend package:
+#### Middleware Implementation
 
-```typescript
-// Create an auth instance
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-export class Auth {
-  private supabaseClient: SupabaseClient<Database>;
-
-  constructor(supabaseUrl: string, supabaseKey: string) {
-    this.supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    });
-  }
-
-  // Core authentication methods
-  async signInWithEmail(email: string, password: string) {
-    const { data, error } = await this.supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
-    return { user: data.user, session: data.session };
-  }
-
-  async signInWithOAuth(provider: 'github' | 'google') {
-    const { data, error } = await this.supabaseClient.auth.signInWithOAuth({
-      provider,
-    });
-    if (error) throw error;
-    return data;
-  }
-
-  async signUp(email: string, password: string) {
-    const { data, error } = await this.supabaseClient.auth.signUp({
-      email,
-      password,
-    });
-    if (error) throw error;
-    return { user: data.user, session: data.session };
-  }
-
-  async signOut() {
-    const { error } = await this.supabaseClient.auth.signOut();
-    if (error) throw error;
-  }
-}
-```
-
-The `Auth` class provides:
-
-- User management and sessions
-- OAuth integration (GitHub, Google)
-- JWT tokens for session management
-- Row Level Security (RLS) integration
-- Type-safe authentication methods
-
-### 2. Framework Integration
-
-Our authentication system provides built-in support for both Svelte stores and Astro:
+The core server-side authentication is handled by Astro middleware:
 
 ```typescript
-// Svelte Store Integration
-export function createSvelteAuthStore(options: {
-  auth: Auth;
-  createStore: (value: AuthStore) => any;
-}) {
-  const store = options.createStore({
-    user: null,
-    loading: true,
-    error: null,
+// apps/web/src/middleware.ts
+import { defineMiddleware } from "astro:middleware";
+import { getUser } from "shared/auth/utils/supabaseServer";
+import { accessTokenName, refreshTokenName } from "shared/auth/utils/config";
+
+export const onRequest = defineMiddleware(async ({ cookies, locals, url, redirect }, next) => {
+  // Get tokens from cookies
+  const accessToken = cookies.get(accessTokenName)?.value;
+  const refreshToken = cookies.get(refreshTokenName)?.value;
+
+  // Get user data if tokens exist
+  const userData = await getUser({
+    accessToken,
+    refreshToken,
+    cookies: {
+      get: (name) => cookies.get(name)?.value,
+      set: (name, value, options) => cookies.set(name, value, options),
+      remove: (name, options) => cookies.delete(name, options),
+    },
   });
 
-  async function init() {
-    try {
-      const session = await options.auth.getSession();
-      store.set({ user: session?.user ?? null, loading: false, error: null });
+  // Set auth state in locals
+  locals.isLoggedIn = !!userData;
+  locals.user = userData;
 
-      options.auth.onAuthStateChange((user) => {
-        store.set({ user, loading: false, error: null });
-      });
-    } catch (error) {
-      store.set({
-        user: null,
-        loading: false,
-        error: error instanceof Error ? error : new Error('Unknown error'),
-      });
-    }
+  // Handle protected routes
+  const protectedRoutes = ['/dashboard'];
+  const publicRoutes = ['/login', '/signup'];
+  const isProtectedRoute = protectedRoutes.some(route => url.pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route));
+
+  if (isProtectedRoute && !locals.isLoggedIn) {
+    return redirect('/login');
   }
 
-  init();
-  return store;
-}
-
-// Astro Store Integration
-export function createAstroAuthStore(auth: Auth) {
-  let store: AuthStore = {
-    user: null,
-    loading: true,
-    error: null,
-  };
-
-  async function initialize() {
-    try {
-      const session = await auth.getSession();
-      store = {
-        user: session?.user ?? null,
-        loading: false,
-        error: null,
-      };
-    } catch (error) {
-      store = {
-        user: null,
-        loading: false,
-        error: error instanceof Error ? error : new Error('Unknown error'),
-      };
-    }
+  if (isPublicRoute && locals.isLoggedIn) {
+    return redirect('/dashboard');
   }
 
-  return {
-    getStore: () => store,
-    initialize,
-  };
-}
-```
-
-### 3. Frontend Implementation
-
-Applications can implement authentication using these main components:
-
-#### Auth Instance
-
-```typescript
-// lib/auth.ts
-import { Auth } from '@sfh/backend';
-
-export const auth = new Auth(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
-
-// Re-export auth methods for convenience
-export const { signInWithEmail, signInWithOAuth, signUp, signOut } = auth;
-```
-
-#### Auth Store
-
-```typescript
-// lib/stores/auth.ts
-import { writable } from 'svelte/store';
-import { auth } from '../auth';
-import { createSvelteAuthStore } from '@sfh/backend';
-
-export const authStore = createSvelteAuthStore({
-  auth,
-  createStore: writable,
+  return next();
 });
 ```
 
-#### Login Page
+#### User Data Fetching
 
-```astro
----
-// pages/login.astro
-import LoginForm from '../components/LoginForm.svelte';
-import Layout from '../layouts/Layout.astro';
----
+The `getUser` function in our server utilities handles both session management and profile data fetching:
 
-<Layout title="Login">
-  <div class="min-h-screen hero bg-base-200">
-    <div class="hero-content flex-col">
-      <div class="text-center mb-8">
-        <h1 class="text-5xl font-bold">Welcome Back!</h1>
-        <p class="py-6 text-base-content/60">Sign in to access your dashboard</p>
-      </div>
+```typescript
+// shared/auth/utils/supabaseServer.ts
+export const getUser = async (arg: {
+  accessToken: string | undefined;
+  refreshToken: string | undefined;
+  cookies: {
+    get: (name: string) => string | undefined;
+    set: (name: string, value: string, options: CookieOptions) => void;
+    remove: (name: string, options: CookieOptions) => void;
+  };
+}) => {
+  const { accessToken, refreshToken, cookies } = arg;
 
-      <LoginForm client:load />
-    </div>
+  try {
+    const supabase = createServerSupabase(cookies);
+    
+    if (accessToken && refreshToken) {
+      // Set the session if tokens are provided
+      await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+    }
+
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw userError || "No user";
+
+    // Get the user's profile
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("username, website, avatar_url")
+      .eq("id", user.id)
+      .single();
+
+    // Return combined user and profile data
+    const { id, email, phone } = user;
+    return {
+      ...profile,
+      id,
+      email,
+      phone,
+    };
+  } catch (e) {
+    console.log('getUser error:', e);
+    return undefined;
+  }
+};
+```
+
+#### Supabase Server Client
+
+The server-side Supabase client is created with proper cookie handling:
+
+```typescript
+// shared/auth/utils/supabaseServer.ts
+export function createServerSupabase(cookies: {
+  get: (name: string) => string | undefined;
+  set: (name: string, value: string, options: CookieOptions) => void;
+  remove: (name: string, options: CookieOptions) => void;
+}) {
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get: (key) => cookies.get(key),
+      set: (key, value, options) => cookies.set(key, value, options),
+      remove: (key, options) => cookies.remove(key, options),
+    },
+  });
+}
+```
+
+### 2. Client-Side Authentication
+
+#### State Management
+
+The client-side state is managed through a combination of cookies and Supabase's auth state changes:
+
+```typescript
+// Layout.astro client-side script
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+    // Clear cookies and update UI immediately
+    setCookie(accessTokenName, '', 0);
+    setCookie(refreshTokenName, '', 0);
+    document.body.dataset.loggedIn = '';
+    
+    // Redirect if not on public route
+    const publicRoutes = ['/login', '/signup'];
+    const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+    if (!isPublicRoute) {
+      window.location.href = '/login';
+    }
+  } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    if (!session) return;
+    
+    // Set cookies and update UI immediately
+    const maxAge = 100 * 365 * 24 * 60 * 60; // 100 years
+    setCookie(accessTokenName, session.access_token, maxAge);
+    setCookie(refreshTokenName, session.refresh_token, maxAge);
+    document.body.dataset.loggedIn = 'true';
+    
+    // Redirect if on public route
+    const publicRoutes = ['/login', '/signup'];
+    const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+    if (isPublicRoute) {
+      window.location.href = '/dashboard';
+    }
+  }
+});
+```
+
+#### Supabase Client Configuration
+
+```typescript
+// shared/auth/utils/supabaseBrowser.ts
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    debug: false,
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  }
+});
+```
+
+### 3. Authentication Components
+
+#### Login Form Component
+
+```typescript
+// shared/auth/components/LoginForm.svelte
+<script lang="ts">
+  import { auth } from '../auth';
+  import { authStore } from '../stores/auth';
+
+  let email = '';
+  let password = '';
+  let loading = false;
+  let error: string | null = null;
+
+  async function handleSubmit() {
+    loading = true;
+    error = null;
+
+    try {
+      const { user } = await auth.signInWithEmail(email, password);
+      authStore.set({ user, loading: false, error: null });
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'An error occurred';
+      authStore.set({ user: null, loading: false, error: e instanceof Error ? e : null });
+    } finally {
+      loading = false;
+    }
+  }
+</script>
+```
+
+#### Login Status Component
+
+```typescript
+// apps/web/src/components/LoginStatus.astro
+<div class="fixed top-4 right-4">
+  <div class="badge badge-lg gap-2" data-login-status>
+    {isLoggedIn ? '✓ Logged in' : '○ Not logged in'}
   </div>
-</Layout>
+</div>
+
+<script>
+  // Update badge when data-logged-in attribute changes on body
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'data-logged-in') {
+        const isLoggedIn = document.body.dataset.loggedIn === 'true';
+        updateBadge(isLoggedIn);
+      }
+    });
+  });
+
+  observer.observe(document.body, { attributes: true });
+</script>
 ```
 
 ## Security Considerations
 
+### Cookie Management
+
+Our application uses secure HTTP-only cookies for session management:
+
+```typescript
+// Cookie configuration
+const cookieOptions = {
+  path: '/',
+  secure: true,
+  sameSite: 'Lax',
+  httpOnly: true,
+  maxAge: 100 * 365 * 24 * 60 * 60 // 100 years
+};
+
+// Cookie names are prefixed with a configurable value
+export const cookiePrefix = import.meta.env.PUBLIC_SUPABASE_COOKIE_PRE;
+export const accessTokenName = `${cookiePrefix}-access-token`;
+export const refreshTokenName = `${cookiePrefix}-refresh-token`;
+```
+
 ### Environment Variables
 
 ```bash
-# Required for authentication
+# Required environment variables
 PUBLIC_SUPABASE_URL="your-project-url"
 PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-
-# For secure server-side operations
-SUPABASE_SERVICE_KEY="your-service-key" # Never expose this
+PUBLIC_SUPABASE_COOKIE_PRE="your-cookie-prefix"
 ```
 
 ### Row Level Security (RLS)
 
-All data access is controlled through RLS policies that integrate with the authentication system:
+All data access is controlled through Supabase RLS policies:
 
 ```sql
--- Example: Users can only access their own data
-create policy "Users can only access their own data"
-  on public.users
-  for select
+-- Example: Users can only access their own profile data
+create policy "Users can only access their own profile"
+  on public.profiles
+  for all
   using (auth.uid() = id);
 ```
 
 ## Best Practices
 
-1. **Authentication Setup**
+1. **Server-Side Authentication**
+   - Always validate authentication server-side using middleware
+   - Use cookie-based session management for better security
+   - Never trust client-side authentication state alone
 
-   - Always use the shared `@sfh/backend` package for authentication
-   - Configure environment variables properly
-   - Initialize auth early in your application
+2. **Protected Routes**
+   - Define protected routes in middleware
+   - Implement both server-side and client-side route protection
+   - Use route guards consistently across the application
 
-2. **Route Protection**
+3. **State Management**
+   - Use the auth store for reactive UI updates
+   - Maintain session state in secure HTTP-only cookies
+   - Handle auth state changes gracefully
 
-   - Use middleware or layout components for protected routes
-   - Use RLS policies as the primary security mechanism
-   - Never rely solely on client-side auth checks
+4. **Error Handling**
+   - Provide clear feedback for authentication errors
+   - Handle token refresh failures appropriately
+   - Log authentication issues for debugging
 
-3. **Error Handling**
-
-   - Always handle authentication errors gracefully
-   - Provide clear feedback to users
-   - Log authentication failures appropriately
-
-4. **State Management**
-
-   - Use the provided auth store for state management
-   - Avoid storing sensitive auth data in local storage
-   - Clear auth state properly on logout
-
-5. **Performance**
-   - Use `client:load` directive for auth components
-   - Implement loading states for better UX
-   - Cache auth state appropriately
+5. **Testing**
+   - Write e2e tests for authentication flows
+   - Test both successful and failed authentication scenarios
+   - Verify protected route access control
 
 ## Troubleshooting
 
 Common issues and their solutions:
 
 1. **Session Not Persisting**
+   - Check if cookies are being set properly in the browser
+   - Verify that both `accessTokenName` and `refreshTokenName` cookies exist
+   - Ensure `PUBLIC_SUPABASE_COOKIE_PRE` is set correctly in environment variables
+   - Check that cookie options include `secure`, `httpOnly`, and proper `sameSite` settings
 
-   - Check if cookies are enabled
-   - Verify SSL configuration
-   - Ensure correct environment variables
+2. **Protected Route Access Issues**
+   - Verify that the route is listed in `protectedRoutes` array in middleware
+   - Check browser console for authentication errors
+   - Ensure `getUser` function is returning valid user data
+   - Verify that profile data is being fetched correctly from the database
 
-2. **Protected Route Flashing**
+3. **Profile Data Not Loading**
+   - Check that the user has a corresponding entry in the `profiles` table
+   - Verify RLS policies allow access to the profile data
+   - Look for `PGRST116` errors which indicate missing profile data
+   - Ensure profile fields (`username`, `website`, `avatar_url`) are properly defined
 
-   - Use `client:load` directive
-   - Implement proper loading states
-   - Check auth store initialization
+4. **Auth State Synchronization**
+   - Check that `data-logged-in` attribute is being updated on the body element
+   - Verify that `LoginStatus` component's MutationObserver is working
+   - Ensure auth state changes are properly handled in `Layout.astro`
+   - Check for proper cookie updates during auth state changes
 
-3. **RLS Policy Issues**
-   - Verify policy syntax
-   - Check user authentication state
-   - Test policies in Supabase Studio
+5. **Token Refresh Issues**
+   - Verify that `autoRefreshToken` is enabled in Supabase client config
+   - Check for proper handling of `TOKEN_REFRESHED` events
+   - Ensure refresh token cookie is not expired
+   - Look for token refresh errors in browser console
+
+For any persistent issues:
+1. Check the browser's console for authentication-related errors
+2. Verify all required environment variables are set correctly
+3. Ensure database tables and RLS policies are properly configured
+4. Review server logs for any authentication or database errors

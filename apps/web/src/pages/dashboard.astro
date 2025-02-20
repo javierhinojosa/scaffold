@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import Nav from '../components/Nav.astro'
-import { getUser } from '../utils/supabaseServer'
-import { accessTokenName, refreshTokenName } from '../utils/config'
+import { getUser } from '../../../../shared/auth/utils/supabaseServer'
+import { accessTokenName, refreshTokenName } from '../../../../shared/auth/utils/config'
 
 const accessToken = Astro.cookies.get(accessTokenName)?.value
 const refreshToken = Astro.cookies.get(refreshTokenName)?.value
@@ -79,7 +79,7 @@ img {
 
 </style>
 <script>
-import { supabase } from '../utils/supabaseBrowser'
+import { supabase } from '../../../../shared/auth/utils/supabaseBrowser'
 const form = document.querySelector('form') as HTMLFormElement
 const avatarImg = document.querySelector('#avatar-image') as HTMLImageElement
 const avatarUrl = document.querySelector('#avatar_url') as HTMLInputElement

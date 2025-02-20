@@ -63,7 +63,7 @@ const pages = isLoggedIn ? ['home', 'profile'] : ['home', 'login']
 </style>
 
 <script>
-import {supabase} from '../utils/supabaseBrowser'
+import {supabase} from '../../../../shared/auth/utils/supabaseBrowser'
 // we add the logout logic here
 
 const logoutAction = document.querySelector('.logout-action')

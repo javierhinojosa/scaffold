@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
-import { getUser } from "./utils/supabaseServer";
-import { accessTokenName, refreshTokenName } from "./utils/config";
+import { getUser } from "../../../shared/auth/utils/supabaseServer";
+import { accessTokenName, refreshTokenName } from "../../../shared/auth/utils/config";
 
 export const onRequest = defineMiddleware(async ({ cookies, locals, url, redirect }, next) => {
   // Get tokens from cookies

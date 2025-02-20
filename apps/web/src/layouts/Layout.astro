@@ -37,8 +37,8 @@ const { title, isLoggedIn } = Astro.props;
 </html>
 
 <script>
-  import { supabase } from '../utils/supabaseBrowser';
-  import { accessTokenName, refreshTokenName } from '../utils/config';
+  import { supabase } from '../../../../shared/auth/utils/supabaseBrowser';
+  import { accessTokenName, refreshTokenName } from '../../../../shared/auth/utils/config';
 
   function getCookie(name: string): string | null {
     const value = `; ${document.cookie}`;

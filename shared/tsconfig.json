@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
+    "composite": true,
+    "declaration": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -18,6 +19,7 @@
     "jsx": "preserve"
   },
   "include": ["**/*.ts", "**/*.svelte"],
+  "exclude": ["node_modules"],
   "references": [
     { "path": "../packages/backend" }
   ]
